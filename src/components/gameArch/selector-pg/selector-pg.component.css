@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+.select-bg {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+  font-family: 'Press Start 2P', cursive;
+}
+
+.title {
+  font-size: 14px;
+}
+
+.character-card {
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.character-card:hover {
+  transform: scale(1.05);
+}
+
+.selected-card {
+  border-color: #ffc107;
+  box-shadow: 0 0 10px #ffc107;
+}

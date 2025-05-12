@@ -1,54 +1,57 @@
 import { Component } from '@angular/core';
-import {Pg} from '../../../model/Pg';
-import {PgRepositoryService} from '../../../services/pg-repository.service';
+import { Pg } from '../../../model/Pg';
+import { PgRepositoryService } from '../../../services/pg-repository.service';
+import { NgForOf } from '@angular/common';
+import {map} from 'rxjs';
+import {join} from '@angular/compiler-cli';
 
 @Component({
   selector: 'app-selector-pg',
-  imports: [],
+  standalone: true,
+  imports: [NgForOf],
   templateUrl: './selector-pg.component.html',
   styleUrl: './selector-pg.component.css'
 })
-export class SelectorPgComponent
-{
+export class SelectorPgComponent {
   allCharacters: Pg[] = [];
-  idSelectedCharacter: number[] = []
+  idSelectedCharacter: number[] = [];
 
-  constructor(private pgRepo:PgRepositoryService) {}
+  constructor(private pgRepo: PgRepositoryService) {}
 
-  ngOnInit()
-  {
-    this.pgRepo.getAllPgs()
-      .subscribe({
-        next: (data) => {
-          this.allCharacters = data;
-        },
-        error: (err) => {
-          console.log("Errore caricamento personaggi:", err);
-          this.allCharacters = [];
-        },
-      })
+  ngOnInit() {
+    this.pgRepo.getAllPgs().subscribe({
+      next: (data) => {
+        this.allCharacters = data;
+      },
+      error: (err) => {
+        console.log('Errore caricamento personaggi:', err);
+        this.allCharacters = [];
+      },
+    });
   }
 
-  selectionChange(id: number, event: Event): void {
-    const isChecked = (event.target as HTMLInputElement).checked;
-
-    if (isChecked)
-    {
-      // Se è selezionato e non è già presente, aggiungilo
-      if (!this.idSelectedCharacter.includes(id))
-      {
-        this.idSelectedCharacter.push(id);
-      }
-      // Se è selezionato MA è GIA' presente, non facciamo nulla
-    }
-    else // Se NON è selezionato, nel caso si voglia deselezionare un personaggio selezionato
-    {
-      const index = this.idSelectedCharacter.indexOf(id);
-      // Se l'elemento è stato trovato, rimuovilo
-      if (index > -1)
-      {
-        this.idSelectedCharacter.splice(index, 1);
-      }
+  selectionChange(id: number): void {
+    const index = this.idSelectedCharacter.indexOf(id);
+    if (index > -1) {
+      this.idSelectedCharacter.splice(index, 1);
+    } else if (this.idSelectedCharacter.length < 3) {
+      this.idSelectedCharacter.push(id);
     }
   }
+
+  isSelected(id: number): boolean {
+    return this.idSelectedCharacter.includes(id);
+  }
+
+  get selectedNames(): string {
+    return this.allCharacters
+      .filter(c => this.idSelectedCharacter.includes(c.id))
+      .map(c => c.name)
+      .join(', ') || 'Nessuno';
+  }
+
+  protected readonly map = map;
+  protected readonly join = join;
 }
+
+

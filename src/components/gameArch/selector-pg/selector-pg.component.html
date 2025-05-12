@@ -1,1 +1,22 @@
-<p>selector-pg works!</p>
+<div class="container py-4 select-bg">
+  <h2 class="text-center text-white mb-4 title">Scegli fino a 3 personaggi</h2>
+
+  <div class="row g-4 justify-content-center">
+    <div class="col-6 col-md-4 col-lg-3" *ngFor="let character of allCharacters">
+      <div class="card character-card shadow"
+           [class.selected-card]="selectionChange(character.id)"
+           (click)="selectionChange(character.id)">
+        <img [src]="character.imageUrl || 'https://via.placeholder.com/150'"
+             class="card-img-top p-3"
+             [alt]="character.name">
+        <div class="card-body text-center">
+          <h5 class="card-title">{{ character.name }}</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-4 text-white">
+    <p>Selezionati: {{ selectedNames }}</p>
+  </div>
+</div>
