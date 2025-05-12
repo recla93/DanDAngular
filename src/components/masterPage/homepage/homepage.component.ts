@@ -14,9 +14,7 @@ export class HomepageComponent
 {
   constructor(private http: HttpClient) {
   }
-
   newGame()
   {
-
   }
 }
