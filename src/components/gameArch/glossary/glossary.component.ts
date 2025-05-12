@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import {Pg} from '../../../model/Pg';
+import {PgRepositoryService} from '../../../services/pg-repository.service';
 
 @Component({
   selector: 'app-glossary',
@@ -11,6 +12,8 @@ export class GlossaryComponent
 {
   personaggi: Pg[] = [];
 
-  constructor(private pgRepo:Pg) {
+  constructor(private pgRepo:PgRepositoryService)
+  {
+    pgRepo.getAllPgs().subscribe(resp=> this.personaggi = resp);
   }
 }
