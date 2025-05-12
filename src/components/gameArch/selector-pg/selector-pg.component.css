@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+.select-bg {
+  min-height: 100vh;
+  background: url('https://www.pixel4k.com/wp-content/uploads/2018/10/pixel-dark-castle-retro_1540147559.jpg') no-repeat center center;
+  background-size: cover;
+  font-family: 'Press Start 2P', monospace;
+  padding: 2rem;
+  color: #00ff00;
+  position: relative;
+}
+
+.title {
+  font-size: 20px;
+  color: #00ff00;
+  border-bottom: 2px dashed #00ff00;
+  padding-bottom: 1rem;
+}
+
+.character-card {
+  cursor: pointer;
+  border: 2px solid #333;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.75);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  color: #ccff99;
+  font-size: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 220px;
+}
+
+.character-card:hover {
+  transform: scale(1.05);
+  border-color: #00ff00;
+  box-shadow: 0 0 10px #00ff00, 0 0 20px #66ff66;
+}
+
+.selected-card {
+  border-color: #66ff66 !important;
+  background-color: rgba(0, 20, 0, 0.8);
+  box-shadow: 0 0 12px #66ff66, 0 0 24px #00ff00;
+}
+
+.card-img-top {
+  height: 140px;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border-radius: 4px 4px 0 0;
+}
+
+.card-body {
+  padding: 0.5rem 0.25rem;
+  margin-top: auto;
+}
+
+.card-title {
+  font-size: 0.65rem;
+  margin: 0;
+  word-break: break-word;
+  color: #ccff99;
+}
+
+.text-white {
+  color: #00ff00 !important;
+}
+
+.text-white p {
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}

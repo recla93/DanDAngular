@@ -7,6 +7,7 @@ export interface Pg
   atk : number;
   def : number;
   spd : number;
+  imageUrl: string;
   actionsName: string[];
   equipmentsName: string[];
   enumType: string;
