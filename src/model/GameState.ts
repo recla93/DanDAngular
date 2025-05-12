@@ -6,6 +6,6 @@ export interface GameState
 {
   pgs : Pg[];
   monsters : Monster[];
-  order : number;
+  order : number[];
   currentEntity : number;
 }
