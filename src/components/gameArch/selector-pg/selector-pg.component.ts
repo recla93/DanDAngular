@@ -23,7 +23,6 @@ export class SelectorPgComponent
           this.allCharacters = data;
         },
         error: (err) => {
-          console.log("Errore caricamento personaggi:", err);
           this.allCharacters = [];
         },
       })
@@ -41,7 +40,7 @@ export class SelectorPgComponent
       }
       // Se è selezionato MA è GIA' presente, non facciamo nulla
     }
-    else // Se NON è selezionato, nel caso si voglia deselezionare un personaggio selezionato
+    else // Se è selezionato, nel caso si voglia deselezionare un personaggio selezionato
     {
       const index = this.idSelectedCharacter.indexOf(id);
       // Se l'elemento è stato trovato, rimuovilo
