@@ -2,11 +2,69 @@
   <div class="row">
     <div class="col-4"></div>
     <div class="col-4 mt-sm-4 text-center">
-
-      @for (p of personaggi; track p.id)
-      {
-
-      }
+      <h1 class="display-3">Personaggi</h1>
     </div>
   </div>
 </div>
+
+<div class="container py-4">
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="col" *ngFor="let pg of personaggi">
+      <div class="card h-100 text-bg-dark border-light shadow">
+        <div class="card-header text-uppercase fw-bold">
+          {{ pg.name }}
+          <span class="badge bg-secondary float-end">{{ pg.enumType }}</span>
+        </div>
+        <div class="card-body">
+          <p class="card-text text-muted mb-2 fst-italic">
+            {{ pg.description }}
+          </p>
+
+          <ul class="list-group list-group-flush small mb-3">
+            <li class="list-group-item bg-transparent d-flex justify-content-between">
+              <span>❤️ HP</span><span>{{ pg.hp }}</span>
+            </li>
+            <li class="list-group-item bg-transparent d-flex justify-content-between">
+              <span>⚔️ ATK</span><span>{{ pg.atk }}</span>
+            </li>
+            <li class="list-group-item bg-transparent d-flex justify-content-between">
+              <span>🛡️ DEF</span><span>{{ pg.def }}</span>
+            </li>
+            <li class="list-group-item bg-transparent d-flex justify-content-between">
+              <span>💨 SPD</span><span>{{ pg.spd }}</span>
+            </li>
+          </ul>
+
+          <div>
+            <strong>Actions:</strong>
+            <div class="d-flex flex-wrap gap-1 mt-1">
+              <span *ngFor="let action of pg.actionsName" class="badge bg-primary">
+                {{ action }}
+              </span>
+            </div>
+
+            <strong class="mt-3 d-block">Equipments:</strong>
+            <div class="d-flex flex-wrap gap-1 mt-1">
+              <span *ngFor="let eq of pg.equipmentsName" class="badge bg-warning text-dark">
+                {{ eq }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer text-center">
+          <button class="btn btn-outline-light btn-sm">Dettagli</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-4"></div>
+    <div class="col-4 mt-sm-4 text-center">
+      <h1 class="display-3">Mostri</h1>
+    </div>
+  </div>
+</div>
+
