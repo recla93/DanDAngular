@@ -4,9 +4,9 @@
   <div class="row g-4 justify-content-center">
     <div class="col-6 col-md-4 col-lg-3" *ngFor="let character of allCharacters">
       <div class="card character-card shadow"
-           [class.selected-card]="selectionChange(character.id)"
+           [class.selected-card]="idSelectedCharacter.includes(character.id)"
            (click)="selectionChange(character.id)">
-        <img [src]="character.imageUrl || 'https://via.placeholder.com/150'"
+        <img [src]="character.imageUrl || 'https://picsum.photos/200/300'"
              class="card-img-top p-3"
              [alt]="character.name">
         <div class="card-body text-center">
