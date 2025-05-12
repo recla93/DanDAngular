@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import {Pg} from '../../../model/Pg';
 import {PgRepositoryService} from '../../../services/pg-repository.service';
+import {Monster} from '../../../model/Monster';
+import {MonsterRepositoryService} from '../../../services/monster-repository.service';
 
 @Component({
   selector: 'app-glossary',
@@ -11,9 +13,13 @@ import {PgRepositoryService} from '../../../services/pg-repository.service';
 export class GlossaryComponent
 {
   personaggi: Pg[] = [];
+  mostri: Monster[] = [];
 
-  constructor(private pgRepo:PgRepositoryService)
+  constructor(private pgRepo:PgRepositoryService,
+              private monsterRepo:MonsterRepositoryService)
   {
     pgRepo.getAllPgs().subscribe(resp=> this.personaggi = resp);
+
+    monsterRepo.getAllMonsters().subscribe(resp=> this.mostri = resp);
   }
 }

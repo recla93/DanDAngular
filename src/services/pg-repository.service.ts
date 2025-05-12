@@ -14,4 +14,7 @@ export class PgRepositoryService {
     return this.http.get<Pg[]>('/api/playables/all')
   }
 
+  getPgById(id:number){
+    return this.http.get<Pg[]>(`/api/playables/${id}`)
+  }
 }
