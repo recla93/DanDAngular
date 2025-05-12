@@ -7,5 +7,5 @@ export const routes: Routes =
 [
   {path: '',component: HomepageComponent},
   {path: 'selezione', component: SelectorPgComponent},
-  {path: 'glossario', component: GlossaryComponent},
+  {path: 'glossary', component: GlossaryComponent},
 ];
