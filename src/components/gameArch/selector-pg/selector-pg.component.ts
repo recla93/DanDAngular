@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import {Pg} from '../../../model/Pg';
 
 @Component({
   selector: 'app-selector-pg',
@@ -7,5 +8,7 @@ import { Component } from '@angular/core';
   styleUrl: './selector-pg.component.css'
 })
 export class SelectorPgComponent {
+
+  pgs:Pg[]=[];
 
 }
