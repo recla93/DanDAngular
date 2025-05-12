@@ -1,10 +1,13 @@
 import { Component } from '@angular/core';
 import {Pg} from '../../../model/Pg';
 import {PgRepositoryService} from '../../../services/pg-repository.service';
+import {NgForOf} from '@angular/common';
 
 @Component({
   selector: 'app-selector-pg',
-  imports: [],
+  imports: [
+    NgForOf
+  ],
   templateUrl: './selector-pg.component.html',
   styleUrl: './selector-pg.component.css'
 })
@@ -29,26 +32,22 @@ export class SelectorPgComponent
       })
   }
 
-  selectionChange(id: number, event: Event): void {
-    const isChecked = (event.target as HTMLInputElement).checked;
+  selectionChange(id: number): void {
+    const index = this.idSelectedCharacter.indexOf(id);
 
-    if (isChecked)
-    {
-      // Se è selezionato e non è già presente, aggiungilo
-      if (!this.idSelectedCharacter.includes(id))
-      {
-        this.idSelectedCharacter.push(id);
-      }
-      // Se è selezionato MA è GIA' presente, non facciamo nulla
+    if (index > -1) {
+      // già selezionato → deseleziona
+      this.idSelectedCharacter.splice(index, 1);
+    } else if (this.idSelectedCharacter.length < 3) {
+      // ancora spazio → seleziona
+      this.idSelectedCharacter.push(id);
     }
-    else // Se NON è selezionato, nel caso si voglia deselezionare un personaggio selezionato
-    {
-      const index = this.idSelectedCharacter.indexOf(id);
-      // Se l'elemento è stato trovato, rimuovilo
-      if (index > -1)
-      {
-        this.idSelectedCharacter.splice(index, 1);
-      }
-    }
+  }
+
+  get selectedNames(): string {
+    return this.allCharacters
+      .filter(c => this.idSelectedCharacter.includes(c.id))
+      .map(c => c.name)
+      .join(', ') || 'Nessuno';
   }
 }
