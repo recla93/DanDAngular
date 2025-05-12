@@ -6,6 +6,7 @@ import { Component } from '@angular/core';
   templateUrl: './arena.component.html',
   styleUrl: './arena.component.css'
 })
-export class ArenaComponent {
-
+export class ArenaComponent
+{
+    
 }
