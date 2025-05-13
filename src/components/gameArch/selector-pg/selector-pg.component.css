@@ -1,13 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
-.body-bg {
-  background: #000;
-  opacity: 60%;
+.battle-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 
-.select-bg {
-  min-height: auto;
+.game-button.battle-button {
+  background-color: #000;
+  color: #0f0;
+  border-color: #0f0;
+  text-shadow: 0 0 5px #0f0, 0 0 7px #0f0;
+  box-shadow: 0 0 8px rgba(0,255,0,0.3);
+}
+
+.select-pg-background {
+  min-height: 100vh;
   font-family: 'VT323', monospace;
   padding: 0;
   color: #0f0;
@@ -24,8 +33,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  width: auto;
-  height: auto;
+  width: 100vw; /* Corretto da auto */
+  height: 100vh; /* Corretto da auto */
   background-image: repeating-linear-gradient(
     0deg,
     rgba(0, 255, 0, 0.05) 0,
@@ -50,43 +59,41 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 1200px; /* Coerenza con glossary-container */
+  max-width: 1200px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 20px 40px 20px; /* Padding come glossary-container, rimosso py-4 */
+  padding: 0; /* Rimosso py-4 se header-controls gestisce padding top */
   box-sizing: border-box;
 }
 
 .header-controls {
-  width: 100%; /* Occupa tutta la larghezza del content-container */
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 0; /* Padding verticale, orizzontale ereditato da content-container o 0 se si vuole edge-to-edge */
+  padding: 20px 0; /* Padding solo verticale, quello orizzontale è su content-container */
   border-bottom: 2px solid #0f0;
   margin-bottom: 30px;
   box-sizing: border-box;
   position: relative;
-  z-index: 2; /* Coerenza con glossary */
+  z-index: 2;
 }
 
 .game-button {
   display: inline-flex;
   align-items: center;
   padding: 10px 20px;
-  margin-left: 30px;
   color: #0f0;
   border: 2px solid #0f0;
   text-decoration: none;
   font-family: 'Press Start 2P', cursive;
-  font-size: clamp(0.8em, 1.5vw, 1em);
+  font-size: clamp(0.7em, 1.3vw, 0.9em);
   text-shadow: 0 0 5px #0f0, 0 0 7px #0f0;
   background-color: rgba(0,0,0,0.75);
   transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
   cursor: pointer;
   box-shadow: 0 0 8px rgba(0,255,0,0.3);
-  z-index: 2;
 }
 
 .game-button:hover {
@@ -99,25 +106,27 @@
   margin-right: 8px;
   font-size: 1.2em;
 }
-
-.back-button {
-  min-width: 150px; /* Coerenza con glossary */
-  justify-content: center; /* Coerenza con glossary */
+.go-to-battle-button .arrow {
+  margin-left: 8px;
+  margin-right: 0;
 }
 
-.title.page-main-title { /* Stile specifico per il titolo nell'header */
+.back-button, .go-to-battle-button {
+  min-width: 150px;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.title.page-main-title {
   font-family: 'Press Start 2P', cursive;
-  font-size: clamp(1.8em, 4vw, 2.5em); /* Coerenza con glossary page-main-title */
+  font-size: clamp(1.5em, 3.5vw, 2.2em);
   color: #0f0;
   text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
   text-align: center;
   text-transform: uppercase;
   flex-grow: 1;
-  margin: 0;
-  margin-left: -150px; /* Compensa la larghezza del .back-button */
-  padding-bottom: 0;
+  margin: 0 15px;
   border-bottom: none;
-  z-index: 0;
 }
 
 .selection-info {
@@ -125,13 +134,14 @@
   font-size: clamp(1.1rem, 2.8vw, 1.4rem);
   color: #0f0;
   text-align: center;
-  margin-top: 0; /* Rimosso se header-controls ha già margin-bottom */
+  margin-top: 0;
   margin-bottom: 2.5rem;
   text-shadow: 0 0 4px rgba(0,255,0,0.6);
 }
 
 .character-grid {
   width: 100%;
+  /* NO display: grid; qui, Bootstrap gestisce le colonne tramite classi row/col-* nell'HTML */
 }
 
 .character-card {
@@ -142,23 +152,26 @@
   transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
   box-shadow 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
   border-color 0.3s ease-out;
-  width: 100%;
-  height: 400px;
+  width: 100%; /* Occupa tutta la larghezza della colonna Bootstrap */
+  height: 370px; /* Altezza leggermente ridotta per migliorare le proporzioni */
   box-shadow: 0 0 10px rgba(0,255,0,0.4), inset 0 0 6px rgba(0,255,0,0.2);
   image-rendering: pixelated;
   overflow: hidden;
   position: relative;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column; /* Modificato per overlay */
+  justify-content: center; /* Modificato per overlay */
+  align-items: center; /* Mantenuto per centrare l'immagine se più piccola */
 }
 
 .card-image-container {
   width: 100%;
-  height: 100%;
+  height: 95%; /* Diamo una % per l'immagine, il resto per l'info-overlay */
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden; /* Aggiunto per sicurezza */
 }
 
 .card-img-top {
@@ -167,6 +180,22 @@
   object-fit: contain;
   image-rendering: pixelated;
   transition: transform 0.3s ease-out;
+  display: block;
+}
+
+.card-image-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: #0c0;
+  background-color: rgba(0,0,0,0.4);
+  font-family: 'Press Start 2P', cursive;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .character-card:hover .card-img-top {
@@ -174,6 +203,8 @@
 }
 
 .card-info-overlay {
+  /* Se l'overlay è sempre visibile e non solo su hover, rimuovi position:absolute e opacity/visibility transitions */
+  /* Per ora, assumo che sia come nel tuo CSS originale (compare su hover) */
   position: absolute;
   top: 0;
   left: 0;
@@ -190,7 +221,7 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-  border-radius: inherit;
+  border-radius: inherit; /* Usa il border-radius della card padre */
   box-sizing: border-box;
 }
 
@@ -201,7 +232,7 @@
 
 .card-title-overlay {
   font-family: 'Press Start 2P', cursive;
-  font-size: clamp(0.9em, 2.5vw, 1.1em);
+  font-size: clamp(0.8em, 2vw, 1em);
   margin-bottom: 0.75rem;
   word-break: break-word;
   color: #0f0;
@@ -213,15 +244,15 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  font-size: clamp(0.8em, 2.2vw, 0.9em);
+  font-size: clamp(0.75em, 1.8vw, 0.85em);
   width: 90%;
-  max-width: 200px;
+  max-width: 180px;
 }
 .character-stats-list-overlay li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2px 0;
+  padding: 1px 0;
   border-bottom: 1px dashed rgba(0, 255, 0, 0.4);
   color: #0f0;
 }
@@ -247,86 +278,129 @@
   border-color: #9f9 !important;
   box-shadow: 0 0 20px #9f9, 0 0 35px #3f3, inset 0 0 12px rgba(153,255,153,0.5) !important;
 }
-.selected-card .card-info-overlay {
+
+.selector-error, .selector-empty-message {
+  text-align: center;
+  padding: 25px;
+  font-size: 1.1em;
+  color: #0c0;
+  font-family: 'Press Start 2P', cursive;
+  background-color: rgba(0,0,0,0.5);
+  border: 1px solid #0f0;
+  border-radius: 4px;
+  margin: 20px auto;
+  width: calc(100% - 40px);
+  max-width: 600px;
+}
+.selector-error {
+  color: #f00;
+  border-color: #f00;
+  text-shadow: 0 0 5px #f00;
+}
+
+.stats-not-available { /* Aggiunto per coerenza con HTML precedente */
+  font-size: 0.85em;
+  color: #0a0;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.game-button:disabled,
+.go-to-battle-button:disabled {
+  background-color: #555;
+  color: #aaa;
+  border-color: #777;
+  cursor: not-allowed;
+  box-shadow: none;
+  text-shadow: none;
 }
 
 @media (max-width: 992px) {
   .character-card {
-    height: 350px;
+    height: 340px; /* Adattato */
+  }
+  .title.page-main-title {
+    font-size: clamp(1.4em, 3vw, 2em);
   }
 }
 
 @media (max-width: 768px) {
   .header-controls {
-    padding: 15px 0; /* Riduci padding verticale, orizzontale da content-container */
+    padding: 15px 0;
     flex-direction: column;
     gap: 15px;
     margin-bottom: 20px;
   }
   .title.page-main-title {
-    font-size: clamp(1.5em, 5vw, 2em); /* Coerenza con glossary */
-    margin-left: 0;
+    font-size: clamp(1.5em, 5vw, 2em);
+    margin: 0;
     width: 100%;
+    order: -1;
   }
-  .back-button {
+  .back-button, .go-to-battle-button {
     min-width: auto;
-    width: 60%;
-    max-width: 200px;
-    align-self: center; /* Centra il bottone quando in colonna */
+    width: 70%;
+    max-width: 250px;
+    align-self: center;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .go-to-battle-button {
+    order: 1;
   }
   .selection-info {
     font-size: clamp(1rem, 2.5vw, 1.2rem);
     margin-bottom: 2rem;
   }
   .character-card {
-    height: 320px;
+    height: 320px; /* Adattato */
   }
   .card-title-overlay {
-    font-size: clamp(0.85em, 2.3vw, 1em);
+    font-size: clamp(0.8em, 2vw, 0.95em);
   }
   .character-stats-list-overlay {
-    font-size: clamp(0.75em, 2vw, 0.85em);
+    font-size: clamp(0.7em, 1.8vw, 0.8em);
   }
-  .game-button { /* Stile generico per game-button su mobile */
+  .game-button { /* Stile generico per .game-button su mobile, se non sovrascritto */
     padding: 8px 15px;
     font-size: clamp(0.7em, 1.3vw, 0.9em);
   }
 }
 
 @media (max-width: 576px) {
-  .select-bg {
-    padding-top: 1rem; /* Riduci padding-top globale per far spazio all'header */
+  .select-pg-background {
+    padding-top: 1rem;
   }
   .content-container {
-    padding: 0 10px 20px 10px; /* Riduci padding laterale per schermi piccoli */
+    padding: 0 10px 20px 10px;
   }
   .header-controls {
     padding: 15px 0;
     gap: 10px;
   }
   .title.page-main-title {
-    font-size: clamp(1.4em, 6vw, 1.8em); /* Coerenza con glossary */
+    font-size: clamp(1.4em, 6vw, 1.8em);
   }
   .selection-info {
     font-size: clamp(0.9rem, 3vw, 1.1rem);
     margin-bottom: 1.5rem;
   }
   .character-card {
-    height: 280px;
+    height: 300px; /* Adattato */
     border-width: 2px;
   }
   .card-title-overlay {
-    font-size: clamp(0.8em, 2.8vw, 0.95em);
+    font-size: clamp(0.75em, 2.5vw, 0.9em);
     margin-bottom: 0.5rem;
   }
   .character-stats-list-overlay {
-    font-size: clamp(0.7em, 2.5vw, 0.8em);
+    font-size: clamp(0.65em, 2.2vw, 0.75em);
   }
   .character-stats-list-overlay li {
     padding: 1px 0;
   }
-  .back-button {
-    width: auto;
-    max-width: 180px; /* O 100% se vuoi che occupi tutta la larghezza disponibile */
+  .back-button, .go-to-battle-button {
+    width: 80%;
+    max-width: 280px;
   }
 }

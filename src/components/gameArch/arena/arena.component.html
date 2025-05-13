@@ -1,1 +1,98 @@
-<p>arena works!</p>
+<div class="arena-container">
+  <div *ngIf="isLoading && !battleOutcome" class="loading-overlay">
+    <p>Caricamento...</p>
+  </div>
+
+  <div *ngIf="battleOutcome" class="battle-outcome-overlay">
+    <h2>{{ battleOutcome }}</h2>
+    <button (click)="navigateToSelection()" class="game-style-button">Nuova Partita</button>
+    <button (click)="navigateToHome()" class="game-style-button">Torna alla Home</button>
+  </div>
+
+  <div class="pause-menu-button-container" *ngIf="!battleOutcome && gameState">
+    <button (click)="togglePauseMenu()" class="pause-button">☰</button>
+  </div>
+
+  <div *ngIf="isPaused" class="pause-menu-overlay">
+    <div class="pause-menu-content">
+      <h3>PAUSA</h3>
+      <button (click)="togglePauseMenu()" class="game-style-button resume-button">Riprendi Partita</button>
+      <button (click)="startNewGameFromPause()" class="game-style-button">Nuova Partita</button>
+      <button (click)="navigateToHomeFromPause()" class="game-style-button">Torna alla Home</button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="gameState && !isLoading && !battleOutcome">
+    <div class="battle-area" [class.paused]="isPaused">
+      <div class="team player-team">
+        <h3>La Tua Squadra</h3>
+        <div *ngFor="let pg of gameState.good" class="character-card" [class.active-character]="pg.id === gameState.currentEntity && !isPaused" [class.defeated]="pg.currentHp <= 0">
+          <img [src]="pg.imageUrl || 'https://placehold.co/100x150/000500/0f0?text=' + pg.name" [alt]="pg.name" class="character-image">
+          <div class="character-name">{{ pg.name }}</div>
+          <div class="character-hp">
+            HP: {{ pg.currentHp }} / {{ pg.maxHp }}
+            <div class="hp-bar-container">
+              <div class="hp-bar" [style.width.%]="(pg.currentHp / pg.maxHp) * 100"></div>
+            </div>
+          </div>
+          <div *ngIf="pg.id === gameState.currentEntity && isPlayerTurn() && !isTargetingPlayerAction && !isPaused" class="actions-panel">
+            <h4>Azioni di {{ pg.name }}</h4>
+            <button *ngFor="let actionName of pg.actionsName" (click)="handlePlayerActionSelection(actionName, pg)" class="game-style-button action-button">
+              {{ actionName }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="team monster-team">
+        <h3>Mostri</h3>
+        <div *ngFor="let monster of gameState.evil" class="character-card"
+             [class.active-character]="monster.id === gameState.currentEntity && !isPaused"
+             [class.targetable]="isTargetingPlayerAction && selectedActionRequiresTarget && getEntityType(monster.id) === 'monster' && !isPaused"
+             (click)="selectTarget(monster)"
+             [class.defeated]="monster.currentHp <= 0">
+          <img [src]="monster.imageUrl || 'https://placehold.co/100x150/000500/0f0?text=' + monster.name" [alt]="monster.name" class="character-image">
+          <div class="character-name">{{ monster.name }}</div>
+          <div class="character-hp">
+            HP: {{ monster.currentHp }} / {{ monster.maxHp }}
+            <div class="hp-bar-container">
+              <div class="hp-bar" [style.width.%]="(monster.currentHp / monster.maxHp) * 100"></div>
+            </div>
+          </div>
+          <div *ngIf="monster.id === gameState.currentEntity && !isPlayerTurn() && !isPaused" class="turn-indicator-monster">
+            (Turno del Mostro)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="turn-info" *ngIf="getCharacterById(gameState.currentEntity) as currentChar" [class.paused]="isPaused">
+      <p *ngIf="!isPaused">È il turno di: <strong>{{ currentChar.name }}</strong> ({{ getEntityType(currentChar.id) === 'pg' ? 'Giocatore' : 'Mostro' }})</p>
+      <p *ngIf="isPaused">Partita in Pausa</p>
+    </div>
+
+    <div *ngIf="isTargetingPlayerAction && !isPaused" class="targeting-info">
+      <p>Seleziona bersaglio/i per l'azione: <strong>{{ selectedActionNameForTargeting }}</strong> su <strong>{{ currentActingPg?.name }}</strong></p>
+      <div *ngIf="selectedTargets.length > 0">
+        Bersagli selezionati: {{ getSelectedTargetNames() }}
+      </div>
+      <button (click)="confirmPlayerAction()" [disabled]="selectedActionRequiresTarget && selectedTargets.length === 0" class="game-style-button confirm-action-button">Conferma Azione</button>
+      <button (click)="cancelTargeting()" class="game-style-button cancel-action-button">Annulla</button>
+    </div>
+
+
+    <div class="battle-log-container" [class.paused]="isPaused">
+      <h4>Log della Battaglia</h4>
+      <div class="log-entries" #logEntriesContainer>
+        <p *ngFor="let entry of battleLog">{{ entry }}</p>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <div *ngIf="!gameState && !isLoading && battleLog.length > 0 && !battleOutcome" class="error-message-container">
+    <p *ngFor="let entry of battleLog">{{ entry }}</p>
+    <button (click)="navigateToSelection()" class="game-style-button">Torna alla Selezione PG</button>
+  </div>
+
+</div>
