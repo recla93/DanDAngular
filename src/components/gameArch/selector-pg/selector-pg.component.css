@@ -85,6 +85,7 @@
   transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
   cursor: pointer;
   box-shadow: 0 0 8px rgba(0,255,0,0.3);
+  z-index: 2;
 }
 
 .game-button:hover {
@@ -115,6 +116,7 @@
   margin-left: -150px; /* Compensa la larghezza del .back-button */
   padding-bottom: 0;
   border-bottom: none;
+  z-index: 0;
 }
 
 .selection-info {
