@@ -9,6 +9,9 @@ export interface Pg
   spd : number;
   imageUrl: string;
   actionsName: string[];
+  actionsDescriptions: string[];
   equipmentsName: string[];
+  equipmentsDescriptions: string[];
   enumType: string;
+  imageUrl?: string;
 }

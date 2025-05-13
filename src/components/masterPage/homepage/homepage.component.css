@@ -1,80 +1,31 @@
-/* Importa i font pixelati (assicurati che siano disponibili nel progetto) */
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
-/* :host si riferisce all'elemento del componente stesso (app-homepage)
-   Usiamolo per impostare lo sfondo e centrare gli elementi */
+
 :host {
-  display: flex; /* Usa flexbox per centrare */
-  flex-direction: column; /* Allinea i figli verticalmente */
-  justify-content: center; /* Centra verticalmente nella viewport */
-  align-items: center; /* Centra orizzontalmente nella viewport */
-  min-height: 100vh; /* Occupa almeno tutta l'altezza dello schermo */
-  background-color: #1a1a2e; /* Sfondo blu scuro/viola notte */
-  padding: 20px;
-  font-family: 'VT323', monospace; /* Font di base */
-  box-sizing: border-box;
+  display: block;
+  color: #e0e0e0;
+  padding: 20px 0;
+  font-family: 'VT323', monospace;
 }
 
-/* Stile base comune per entrambi i bottoni/link */
-.game-button {
-  font-family: 'Press Start 2P', cursive; /* Font pixelato principale */
-  color: #ffffff; /* Testo bianco */
-  text-shadow: 2px 2px #111; /* Ombra testo per leggibilità */
-  text-transform: uppercase; /* Testo maiuscolo */
-  padding: 15px 30px; /* Spaziatura interna */
-  cursor: pointer; /* Cursore a manina */
-  display: inline-block; /* Necessario per padding/margini */
-  margin: 15px; /* Spazio tra i bottoni */
-  border-style: solid;
-  border-width: 4px;
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.4); /* Ombra 2D più scura */
-  transition: transform 0.1s ease, box-shadow 0.1s ease; /* Animazione click */
-  text-decoration: none; /* Rimuove sottolineatura dai link <a> */
-  text-align: center; /* Centra il testo nel bottone */
+.container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 
-/* Stile specifico per il bottone primario (NEW GAME) */
-.game-button.primary {
-  background-color: #4CAF50; /* Verde */
-  border-color: #388E3C; /* Verde scuro */
-  box-shadow-color: #2E7D32; /* Ombra verde ancora più scura */
+
+.homepage-section {
+  margin-bottom: 50px;
 }
 
-.game-button.primary:hover {
-  background-color: #66BB6A; /* Verde più chiaro al hover */
-}
-
-.game-button.primary:active {
-  transform: translate(2px, 2px); /* Effetto pressione */
-  box-shadow: 2px 2px 0px #2E7D32; /* Ombra ridotta alla pressione */
-}
-
-/* Stile specifico per il bottone secondario (DIARIO) */
-.game-button.secondary {
-  background-color: #f1c40f; /* Giallo/Oro */
-  border-color: #f39c12; /* Arancione scuro */
-  box-shadow-color: #e67e22; /* Arancione ancora più scuro */
-  font-size: 0.9em; /* Leggermente più piccolo */
-  padding: 12px 25px; /* Padding leggermente ridotto */
-}
-
-.game-button.secondary:hover {
-  background-color: #f5d76e; /* Giallo più chiaro al hover */
-}
-
-.game-button.secondary:active {
-  transform: translate(2px, 2px); /* Effetto pressione */
-  box-shadow: 2px 2px 0px #e67e22; /* Ombra ridotta alla pressione */
-}
-
-/* *** Stile per il titolo del gioco *** */
-h1 {
-  font-family: 'Press Start 2P', cursive; /* Usa lo stesso font dei bottoni */
-  color: #e74c3c; /* Colore rosso acceso (puoi cambiarlo) */
-  font-size: 2.5rem; /* Dimensione del font per il titolo */
-  text-align: center; /* Centra il titolo */
-  margin-bottom: 50px; /* Aumenta lo spazio sotto il titolo */
-  text-shadow: 3px 3px #000000; /* Ombra nera netta per effetto retro */
-  line-height: 1.2; /* Migliora la leggibilità se il titolo va a capo */
+.homepage-title h1 {
+  font-family: 'Press Start 2P', cursive;
+  color: #f1c40f; /* Colore specifico homepage */
+  text-shadow: 3px 3px #000;
+  margin-bottom: 40px;
+  font-size: 2rem;
 }
