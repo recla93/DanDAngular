@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+
+:host {
+  display: block;
+  color: #e0e0e0;
+  padding: 20px 0;
+  font-family: 'VT323', monospace;
+}
+
+.container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+
+.homepage-section {
+  margin-bottom: 50px;
+}
+
+.homepage-title h1 {
+  font-family: 'Press Start 2P', cursive;
+  color: #f1c40f; /* Colore specifico homepage */
+  text-shadow: 3px 3px #000;
+  margin-bottom: 40px;
+  font-size: 2rem;
+}
