@@ -33,7 +33,7 @@
     transparent 3px
   );
   animation: rain-scroll-transform 10s linear infinite;
-  z-index: 1;
+  z-index: 3;
   pointer-events: none;
 }
 
