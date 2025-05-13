@@ -2,12 +2,16 @@ import { Component } from '@angular/core';
 import {Pg} from '../../../model/Pg';
 import {PgRepositoryService} from '../../../services/pg-repository.service';
 import {NgForOf} from '@angular/common';
+import { GameStateService } from '../../../services/game-state.service';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-selector-pg',
   imports: [
     NgForOf
   ],
+
   templateUrl: './selector-pg.component.html',
   styleUrl: './selector-pg.component.css'
 })
@@ -16,7 +20,12 @@ export class SelectorPgComponent
   allCharacters: Pg[] = [];
   idSelectedCharacter: number[] = []
 
-  constructor(private pgRepo:PgRepositoryService) {}
+  constructor
+  (
+    private pgRepo: PgRepositoryService,
+    private gameStateService: GameStateService,
+    private router: Router
+  ) {}
 
   ngOnInit()
   {
@@ -50,4 +59,23 @@ export class SelectorPgComponent
       .map(c => c.name)
       .join(', ') || 'Nessuno';
   }
+
+  startGame(): void {
+    if (this.idSelectedCharacter.length === 3) {
+      this.gameStateService.iniziaGame(this.idSelectedCharacter)
+        .subscribe({
+          next: (resp) => {
+            console.log("GameState ricevuto:", resp);
+            this.gameStateService.gameState = resp;
+            this.router.navigate(['/combat']);
+          },
+          error: (err) => {
+            console.error("Errore durante l'avvio della partita:", err);
+            alert("Errore durante l'avvio della partita. Riprova.");
+          }
+        });
+    }
+  }
+
 }
+

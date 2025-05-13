@@ -16,9 +16,9 @@ export class ActionPanelComponent
   actions:Actions[]=[];
   constructor(private aRepo:ActionRepositoryService)
   {
-    setTimeout(()=>{
-      aRepo.getActionByPgId().subscribe(action => this.actions = action);
-    },1000)
+    //setTimeout(() => {
+    //  aRepo.getActionByPgId().subscribe(action => this.actions = action);
+    //}, 1000)
 
   }
 }

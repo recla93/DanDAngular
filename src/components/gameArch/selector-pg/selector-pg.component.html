@@ -18,7 +18,14 @@
   </div>
 
   <div class="text-center mt-4 text-white">
-
+    <button
+      class="btn btn-success px-4 py-2 mt-3"
+      [disabled]="idSelectedCharacter.length !== 3"
+      (click)="startGame()">
+      Inizia la Partita
+    </button>
   </div>
+
+
 </div>
 

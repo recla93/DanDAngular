@@ -3,11 +3,13 @@ import {HomepageComponent} from '../components/masterPage/homepage/homepage.comp
 import {SelectorPgComponent} from '../components/gameArch/selector-pg/selector-pg.component';
 import {GlossaryComponent} from '../components/gameArch/glossary/glossary.component';
 import {ActionPanelComponent} from '../components/gameArch/action-panel/action-panel.component';
+import {CombatComponent} from '../components/gameArch/combat/combat.component';
 
 export const routes: Routes =
 [
   {path: '',component: HomepageComponent},
   {path: 'selezione', component: SelectorPgComponent},
   {path: 'glossary', component: GlossaryComponent},
-  {path: 'actions', component:ActionPanelComponent}
+  {path: 'actions', component:ActionPanelComponent},
+  {path: 'combat', component: CombatComponent}
 ];

@@ -12,11 +12,11 @@ export class ActionRepositoryService {
   constructor(private http: HttpClient,private gsService:GameStateService) { }
 
 
-  getActionByPgId()
+  getActionByPgId(id: number)
   {
     //solo per prova
 
-    this.gsService.gameState!.currentEntity=1
+    this.gsService.gameState!.currentEntity = id;
     return this.http.post<Actions[]>('api/start/action',this.gsService.gameState)
   }
 }

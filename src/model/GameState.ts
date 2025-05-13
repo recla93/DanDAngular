@@ -4,8 +4,8 @@ import {Monster} from './Monster';
 
 export interface GameState
 {
-  pgs : Pg[];
-  monsters : Monster[];
+  good : Pg[];
+  evil : Monster[];
   order : number[];
   currentEntity : number;
 }

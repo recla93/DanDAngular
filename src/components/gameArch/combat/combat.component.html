@@ -1,1 +1,53 @@
-<p>combat works!</p>
+<div class="battle-grid">
+  <!-- Lato PG -->
+  <div class="side team team-left">
+    <div *ngIf="pgsWithMaxHp.length > 0">
+      <div *ngFor="let pg of pgsWithMaxHp" class="combatant">
+        <img [src]="pg.imageUrl"
+             class="combatant-img" alt="{{ pg.name }}">
+        <div class="hp-bar-container">
+          <div class="hp-bar"
+               [style.width.%]="getHpPercent(pg)"
+               [ngClass]="{
+                 'bar-high': getHpPercent(pg) > 60,
+                 'bar-medium': getHpPercent(pg) <= 60 && getHpPercent(pg) > 30,
+                 'bar-low': getHpPercent(pg) <= 30
+               }"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Riquadro CRT con la battaglia -->
+  <div class="crt-container">
+    <div class="crt-screen">
+      <div *ngIf="battleInProgress; else battlePlaceholder">
+        <div class="battle-action">
+          <p>{{ battleLog }}</p>
+        </div>
+      </div>
+      <ng-template #battlePlaceholder>
+        <div class="battle-placeholder">
+          <p>Inizia la battaglia...</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Lato Mostri -->
+  <div class="side team team-right">
+    <div *ngFor="let monster of monstersWithMaxHp" class="combatant">
+      <img [src]="monster.imageUrl || 'https://via.placeholder.com/150'"
+           class="combatant-img" alt="{{ monster.name }}">
+      <div class="hp-bar-container">
+        <div class="hp-bar"
+             [style.width.%]="getMonsterHpPercent(monster)"
+             [ngClass]="{
+               'bar-high': getMonsterHpPercent(monster) > 60,
+               'bar-medium': getMonsterHpPercent(monster) <= 60 && getMonsterHpPercent(monster) > 30,
+               'bar-low': getMonsterHpPercent(monster) <= 30
+             }"></div>
+      </div>
+    </div>
+  </div>
+</div>
