@@ -1,0 +1,476 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+:host {
+  --glossary-bg-dark: rgba(24, 40, 31, 0.85);
+  --glossary-card-bg: #4a6d56;
+  --glossary-card-bg-hover: #5a8066;
+  --glossary-card-border: #122017;
+  --glossary-monster-card-bg: #506a50;
+  --glossary-monster-card-bg-hover: #607c60;
+  --glossary-monster-card-border: #1e2b1e;
+  --glossary-text-light: #e8f5e9;
+  --glossary-text-muted: #a5d6a7;
+  --glossary-highlight-main: #66bb6a;
+  --glossary-highlight-secondary: #ffee58;
+  --glossary-action-color: #4caf50;
+  --glossary-action-color-light: #81c784;
+  --glossary-action-color-hover-bg: #66bb6a;
+  --glossary-action-color-hover-border: #a5d6a7;
+  --glossary-equip-color: #8bc34a;
+  --glossary-equip-color-light: #aed581;
+  --glossary-equip-color-hover-bg: #9ccc65;
+  --glossary-equip-color-hover-border: #c5e1a5;
+  --glossary-danger-badge-bg: #c62828;
+  --glossary-glow-pg: rgba(102, 187, 106, 0.7);
+  --glossary-glow-monster: rgba(120, 160, 120, 0.7);
+  --glossary-noise-texture: linear-gradient(rgba(0,0,0,0.04), rgba(0,0,0,0.04));
+
+  display: block;
+  color: var(--glossary-text-light);
+  padding: 20px 0;
+  font-family: 'VT323', monospace;
+  /*background-color: var(--glossary-bg-dark);*/
+}
+
+.glossary-container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.glossary-section {
+  margin-bottom: 20px;;
+}
+
+.glossary-accordion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 10px;
+  cursor: pointer;
+  border-bottom: 3px solid var(--glossary-card-border);
+  margin-bottom: 25px;
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 5px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.glossary-accordion-header:hover {
+  background-color: rgba(0,0,0,0.2);
+}
+
+.glossary-accordion-header:hover .glossary-title {
+  color: var(--glossary-highlight-main);
+}
+
+.glossary-title {
+  font-family: 'Press Start 2P', cursive;
+  color: var(--glossary-highlight-secondary);
+  text-shadow: 2px 2px #000;
+  margin: 0;
+  font-size: 1.6rem;
+  text-align: left;
+}
+
+.glossary-accordion-icon {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 1.3rem;
+  color: var(--glossary-highlight-secondary);
+  margin-left: 15px;
+}
+
+.glossary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  align-items: stretch;
+  padding-top: 10px;
+}
+
+.glossary-grid-item {
+  display: flex;
+  width: 100%;
+}
+
+.glossary-flip-card {
+  background-color: transparent;
+  width: 100%;
+  min-height: 500px;
+  height: 100%;
+  perspective: 1500px;
+  display: flex;
+  flex-direction: column;
+}
+
+.glossary-flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1);
+  transform-style: preserve-3d;
+  display: flex;
+  flex-direction: column;
+}
+
+.glossary-flip-card.flipped .glossary-flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.glossary-flip-card-front,
+.glossary-flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+}
+
+.glossary-card {
+  width: 100%;
+  height: 100%;
+  background-color: var(--glossary-card-bg);
+  background-image: var(--glossary-noise-texture);
+  border: 4px solid var(--glossary-card-border);
+  box-shadow: 4px 4px 0px var(--glossary-card-border);
+  color: var(--glossary-text-light);
+  font-size: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s ease-out, transform 0.2s ease-out, background-color 0.2s ease;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  transform: translateZ(0);
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+.glossary-monster-card {
+  background-color: var(--glossary-monster-card-bg);
+  border-color: var(--glossary-monster-card-border);
+  box-shadow: 4px 4px 0px var(--glossary-monster-card-border);
+}
+
+.glossary-flip-card:not(.flipped):hover .glossary-flip-card-front {
+  will-change: transform;
+  transform: scale(1.03) translateY(-5px) translateZ(0);
+  box-shadow: 0 0 15px 5px var(--glossary-glow-pg), 4px 4px 0px var(--glossary-card-border);
+  z-index: 10;
+}
+.glossary-flip-card:not(.flipped):hover .glossary-monster-card.glossary-flip-card-front {
+  box-shadow: 0 0 15px 5px var(--glossary-glow-monster), 4px 4px 0px var(--glossary-monster-card-border);
+}
+
+.glossary-flip-card.flipped:hover .glossary-flip-card-back {
+  background-color: var(--glossary-card-bg-hover);
+  box-shadow: inset 0 0 10px rgba(232, 245, 233, 0.1);
+}
+.glossary-flip-card.flipped:hover .glossary-monster-card.glossary-flip-card-back {
+  background-color: var(--glossary-monster-card-bg-hover);
+}
+
+.glossary-flip-card-back {
+  transform: rotateY(180deg);
+}
+.glossary-flip-card-back.glossary-card {
+  background-color: var(--glossary-card-bg);
+}
+.glossary-flip-card-back.glossary-monster-card {
+  background-color: var(--glossary-monster-card-bg);
+}
+
+.glossary-flip-card:not(.flipped) .glossary-flip-card-front {
+  pointer-events: auto !important;
+}
+.glossary-flip-card:not(.flipped) .glossary-flip-card-back {
+  pointer-events: none !important;
+}
+.glossary-flip-card.flipped .glossary-flip-card-front {
+  pointer-events: none !important;
+}
+.glossary-flip-card.flipped .glossary-flip-card-back {
+  pointer-events: auto !important;
+}
+
+.glossary-card-header {
+  padding: 10px 15px;
+  border-bottom: 3px solid var(--glossary-card-border);
+  background-color: rgba(0,0,0,0.2);
+  flex-shrink: 0;
+  min-height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.glossary-monster-card .glossary-card-header {
+  border-bottom-color: var(--glossary-monster-card-border);
+}
+.glossary-card-name {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.9em;
+  color: var(--glossary-text-light);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.3;
+}
+
+.glossary-badge {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.7em;
+  background-color: var(--glossary-highlight-main);
+  color: var(--glossary-bg-dark);
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-weight: bold;
+  text-shadow: none;
+  margin-left: 10px;
+}
+.monster-danger-badge {
+  background-color: var(--glossary-danger-badge-bg);
+  color: var(--glossary-text-light);
+}
+
+.glossary-card-body {
+  padding: 15px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: transparent;
+  overflow-y: auto;
+}
+
+.glossary-card-image-container {
+  width: 100%;
+  height: 150px;
+  margin-bottom: 15px;
+  background-color: rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid var(--glossary-card-border);
+  flex-shrink: 0;
+}
+.glossary-monster-card .glossary-card-image-container {
+  border-color: var(--glossary-monster-card-border);
+}
+
+.glossary-card-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  image-rendering: pixelated;
+}
+
+.glossary-card-image-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  color: var(--glossary-text-muted);
+  background-color: rgba(0,0,0,0.2);
+}
+
+.glossary-stats-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 15px 0;
+  font-size: 0.95em;
+  flex-shrink: 0;
+}
+.glossary-stats-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(232, 245, 233, 0.2);
+}
+.glossary-stats-list li:last-child {
+  border-bottom: none;
+}
+.glossary-stats-list span:first-child {
+  color: var(--glossary-text-muted);
+  margin-right: 10px;
+}
+.glossary-stats-list span:last-child {
+  font-weight: bold;
+  color: var(--glossary-highlight-secondary);
+}
+
+.glossary-details-section {
+  margin-top: 15px;
+  font-size: 0.9em;
+  flex-shrink: 0;
+}
+.glossary-details-section strong {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8em;
+  color: var(--glossary-highlight-secondary);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.glossary-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.glossary-tag {
+  font-family: 'VT323', monospace;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.95em;
+  color: var(--glossary-text-light);
+  font-weight: bold;
+  border-style: solid;
+  border-width: 2px;
+  cursor: pointer;
+  text-shadow: 1px 1px #000;
+  transition: transform 0.1s ease, background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  background-color: rgba(0,0,0, 0.3);
+  text-align: center;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+  appearance: none;
+  -webkit-appearance: none;
+  text-decoration: none;
+  line-height: normal;
+}
+.glossary-tag:hover {
+  transform: scale(1.08) rotate(-2deg) translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.1);
+  text-shadow: 1px 1px #000;
+  box-shadow: 3px 3px 0px rgba(0,0,0,0.4);
+}
+.glossary-tag:active {
+  transform: scale(0.98) rotate(1deg) translateY(1px);
+  box-shadow: 1px 1px 0px rgba(0,0,0,0.5);
+}
+
+.glossary-action-tag {
+  border-color: var(--glossary-action-color);
+  color: var(--glossary-action-color-light);
+}
+.glossary-action-tag:hover {
+  border-color: var(--glossary-action-color-hover-border);
+  color: #fff;
+  background-color: var(--glossary-action-color-hover-bg);
+}
+
+.glossary-equipment-tag {
+  border-color: var(--glossary-equip-color);
+  color: var(--glossary-equip-color-light);
+}
+.glossary-equipment-tag:hover {
+  border-color: var(--glossary-equip-color-hover-border);
+  color: #fff;
+  background-color: var(--glossary-equip-color-hover-bg);
+}
+
+.glossary-card-footer {
+  font-family: 'Press Start 2P', cursive;
+  padding: 8px 15px;
+  font-size: 0.7em;
+  text-align: center;
+  border-top: 3px solid var(--glossary-card-border);
+  background-color: rgba(0,0,0,0.2);
+  color: var(--glossary-text-muted);
+  flex-shrink: 0;
+  min-height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+}
+.glossary-monster-card .glossary-card-footer {
+  border-top-color: var(--glossary-monster-card-border);
+}
+
+.glossary-description-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  flex-grow: 1;
+  background-color: transparent;
+  overflow-y: auto;
+}
+
+.glossary-description-text {
+  font-size: 1.1em;
+  line-height: 1.5;
+  text-align: center;
+  font-style: italic;
+  color: var(--glossary-text-light);
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.glossary-error, .glossary-empty-message {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2em;
+  color: var(--glossary-text-muted);
+}
+.glossary-error {
+  background-color: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ffcdd2;
+}
+
+@media (max-width: 768px) {
+  .glossary-title { font-size: 1.5rem; }
+  .glossary-card { font-size: 1rem; }
+  .glossary-card-header { font-size: 0.8em; min-height: 50px; }
+  .glossary-tag { font-size: 0.85em; padding: 4px 8px; }
+  .glossary-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 576px) {
+  .glossary-title { font-size: 1.3rem; }
+  .glossary-tag { font-size: 0.8em; padding: 3px 6px; }
+  .glossary-stats-list li { flex-direction: column; align-items: center; text-align: center; }
+  .glossary-stats-list span:first-child { margin-right: 0; margin-bottom: 2px; }
+  .glossary-card-image-container { height: 120px; }
+  .glossary-flip-card { min-height: 470px; }
+}
+
+.glossary-card-body::-webkit-scrollbar,
+.glossary-description-body::-webkit-scrollbar {
+  width: 10px;
+}
+
+.glossary-card-body::-webkit-scrollbar-track,
+.glossary-description-body::-webkit-scrollbar-track {
+  background: var(--glossary-card-border, #122017);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.glossary-card-body::-webkit-scrollbar-thumb,
+.glossary-description-body::-webkit-scrollbar-thumb {
+  background-color: var(--glossary-highlight-main, #66bb6a);
+  border-radius: 0;
+  border: 1px solid var(--glossary-card-border, #122017);
+}
+
+.glossary-card-body::-webkit-scrollbar-thumb:hover,
+.glossary-description-body::-webkit-scrollbar-thumb:hover {
+  background-color: var(--glossary-highlight-secondary, #ffee58);
+}
+
+.glossary-card-body,
+.glossary-description-body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--glossary-highlight-main, #66bb6a) var(--glossary-card-border, #122017);
+}

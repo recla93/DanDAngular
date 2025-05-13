@@ -1,1 +1,24 @@
-<p>selector-pg works!</p>
+<div class="container py-4 select-bg">
+  <h2 class="text-center text-white mb-4 title">DARKEST DEVELOPERS</h2>
+  <p>Seleziona 3 developers: {{ selectedNames }}</p>
+
+  <div class="row g-4 justify-content-center">
+    <div class="col-6 col-md-3 col-lg-2 d-flex" *ngFor="let character of allCharacters">
+      <div class="card character-card shadow h-100 w-100 d-flex flex-column"
+           [class.selected-card]="idSelectedCharacter.includes(character.id)"
+           (click)="selectionChange(character.id)">
+        <img [src]="character.imageUrl || 'https://picsum.photos/200/300'"
+             class="card-img-top"
+             [alt]="character.name">
+        <div class="card-body text-center mt-auto">
+          <h5 class="card-title">{{ character.name }}</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-4 text-white">
+
+  </div>
+</div>
+
