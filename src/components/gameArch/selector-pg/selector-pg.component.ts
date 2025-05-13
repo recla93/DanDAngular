@@ -2,11 +2,13 @@ import { Component } from '@angular/core';
 import {Pg} from '../../../model/Pg';
 import {PgRepositoryService} from '../../../services/pg-repository.service';
 import {NgForOf} from '@angular/common';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-selector-pg',
   imports: [
-    NgForOf
+    NgForOf,
+    RouterLink
   ],
   templateUrl: './selector-pg.component.html',
   styleUrl: './selector-pg.component.css'

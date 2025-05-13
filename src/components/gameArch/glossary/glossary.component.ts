@@ -1,21 +1,22 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from "@angular/common";
+import { CommonModule, NgFor, NgIf } from "@angular/common"; // NgFor e NgIf sono spesso in CommonModule, ma esplicitarli non fa male
+import { RouterLink } from '@angular/router'; // Importa RouterLink
 import { Subject, of } from 'rxjs';
 import { takeUntil, catchError } from 'rxjs/operators';
 
-import { Pg } from '../../../model/Pg';
-import { Monster } from '../../../model/Monster';
-import { PgRepositoryService } from '../../../services/pg-repository.service';
-import { MonsterRepositoryService } from '../../../services/monster-repository.service';
+import { Pg } from '../../../model/Pg'; // Assicurati che il percorso sia corretto
+import { Monster } from '../../../model/Monster'; // Assicurati che il percorso sia corretto
+import { PgRepositoryService } from '../../../services/pg-repository.service'; // Assicurati che il percorso sia corretto
+import { MonsterRepositoryService } from '../../../services/monster-repository.service'; // Assicurati che il percorso sia corretto
 
 interface PgWithState extends Pg {
-  id: number;
+  id: number; // Assumendo che Pg abbia un id, o aggiungilo se necessario
   flipped: boolean;
   descriptionToShow: string | null;
 }
 
 interface MonsterWithState extends Monster {
-  id: number;
+  id: number; // Assumendo che Monster abbia un id, o aggiungilo se necessario
   flipped: boolean;
   descriptionToShow: string | null;
 }
@@ -23,9 +24,12 @@ interface MonsterWithState extends Monster {
 @Component({
   selector: 'app-glossary',
   standalone: true,
-  imports: [ CommonModule ],
+  imports: [
+    CommonModule, // Contiene *ngIf, *ngFor, ecc.
+    RouterLink    // Aggiungi RouterLink qui
+  ],
   templateUrl: './glossary.component.html',
-  styleUrls: ['./glossary.component.css']
+  styleUrls: ['./glossary.component.css'] // Corretto da styleUrl a styleUrls
 })
 export class GlossaryComponent implements OnInit, OnDestroy {
 
@@ -55,14 +59,15 @@ export class GlossaryComponent implements OnInit, OnDestroy {
     this.pgRepo.getAllPgs().pipe(
       takeUntil(this.destroy$),
       catchError(error => {
+        console.error("Errore caricamento personaggi:", error); // Log dell'errore
         this.errorLoadingPgs = "Impossibile caricare i personaggi. Riprova più tardi.";
         this.cdRef.detectChanges();
         return of([]);
       })
     ).subscribe((resp: Pg[]) => {
-      this.personaggi = resp.map((p): PgWithState => ({
+      this.personaggi = resp.map((p, index): PgWithState => ({
         ...p,
-        id: p.id,
+        id: p.id !== undefined ? p.id : index, // Usa l'id esistente o un fallback
         flipped: false,
         descriptionToShow: null,
       }));
@@ -75,14 +80,15 @@ export class GlossaryComponent implements OnInit, OnDestroy {
     this.monsterRepo.getAllMonsters().pipe(
       takeUntil(this.destroy$),
       catchError(error => {
+        console.error("Errore caricamento mostri:", error); // Log dell'errore
         this.errorLoadingMonsters = "Impossibile caricare i mostri. Riprova più tardi.";
         this.cdRef.detectChanges();
         return of([]);
       })
     ).subscribe((resp: Monster[]) => {
-      this.mostri = resp.map((m): MonsterWithState => ({
+      this.mostri = resp.map((m, index): MonsterWithState => ({
         ...m,
-        id: m.id,
+        id: m.id !== undefined ? m.id : index, // Usa l'id esistente o un fallback
         flipped: false,
         descriptionToShow: null,
       }));
@@ -165,6 +171,7 @@ export class GlossaryComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Assicurati che PgWithState e MonsterWithState abbiano una proprietà 'id' univoca
   trackByPgId(index: number, item: PgWithState): number {
     return item.id;
   }

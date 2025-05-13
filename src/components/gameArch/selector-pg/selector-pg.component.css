@@ -1,72 +1,329 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
-.select-bg {
-  min-height: 100vh;
-  background: url('https://www.pixel4k.com/wp-content/uploads/2018/10/pixel-dark-castle-retro_1540147559.jpg') no-repeat center center;
-  background-size: cover;
-  font-family: 'Press Start 2P', monospace;
-  padding: 2rem;
-  color: #00ff00;
-  position: relative;
+.body-bg {
+  background: #000;
+  opacity: 60%;
 }
 
-.title {
-  font-size: 20px;
-  color: #00ff00;
-  border-bottom: 2px dashed #00ff00;
-  padding-bottom: 1rem;
+.select-bg {
+  min-height: auto;
+  font-family: 'VT323', monospace;
+  padding: 0;
+  color: #0f0;
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rain {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(0, 255, 0, 0.05) 0,
+    rgba(0, 255, 0, 0.1) 1.5px,
+    transparent 3px
+  );
+  animation: rain-scroll-transform 10s linear infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes rain-scroll-transform {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.content-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px; /* Coerenza con glossary-container */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 20px 40px 20px; /* Padding come glossary-container, rimosso py-4 */
+  box-sizing: border-box;
+}
+
+.header-controls {
+  width: 100%; /* Occupa tutta la larghezza del content-container */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0; /* Padding verticale, orizzontale ereditato da content-container o 0 se si vuole edge-to-edge */
+  border-bottom: 2px solid #0f0;
+  margin-bottom: 30px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2; /* Coerenza con glossary */
+}
+
+.game-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  color: #0f0;
+  border: 2px solid #0f0;
+  text-decoration: none;
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(0.8em, 1.5vw, 1em);
+  text-shadow: 0 0 5px #0f0, 0 0 7px #0f0;
+  background-color: rgba(0,0,0,0.75);
+  transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0,255,0,0.3);
+}
+
+.game-button:hover {
+  background-color: #0f0;
+  color: #000;
+  box-shadow: 0 0 15px #0f0, 0 0 25px #0f0;
+}
+
+.game-button .arrow {
+  margin-right: 8px;
+  font-size: 1.2em;
+}
+
+.back-button {
+  min-width: 150px; /* Coerenza con glossary */
+  justify-content: center; /* Coerenza con glossary */
+}
+
+.title.page-main-title { /* Stile specifico per il titolo nell'header */
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(1.8em, 4vw, 2.5em); /* Coerenza con glossary page-main-title */
+  color: #0f0;
+  text-shadow: 0 0 5px #0f0, 0 0 10px #0f0;
+  text-align: center;
+  text-transform: uppercase;
+  flex-grow: 1;
+  margin: 0;
+  margin-left: -150px; /* Compensa la larghezza del .back-button */
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.selection-info {
+  font-family: 'VT323', monospace;
+  font-size: clamp(1.1rem, 2.8vw, 1.4rem);
+  color: #0f0;
+  text-align: center;
+  margin-top: 0; /* Rimosso se header-controls ha già margin-bottom */
+  margin-bottom: 2.5rem;
+  text-shadow: 0 0 4px rgba(0,255,0,0.6);
+}
+
+.character-grid {
+  width: 100%;
 }
 
 .character-card {
   cursor: pointer;
-  border: 2px solid #333;
-  border-radius: 10px;
-  background-color: rgba(0, 0, 0, 0.75);
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-  color: #ccff99;
-  font-size: 0.7rem;
-  display: flex;
-  flex-direction: column;
+  border: 3px solid #0f0;
+  border-radius: 12px;
+  background-color: rgba(0, 10, 0, 0.7);
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+  box-shadow 0.3s cubic-bezier(0.4, 0.0, 0.2, 1),
+  border-color 0.3s ease-out;
   width: 100%;
-  min-height: 220px;
+  height: 400px;
+  box-shadow: 0 0 10px rgba(0,255,0,0.4), inset 0 0 6px rgba(0,255,0,0.2);
+  image-rendering: pixelated;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.character-card:hover {
-  transform: scale(1.05);
-  border-color: #00ff00;
-  box-shadow: 0 0 10px #00ff00, 0 0 20px #66ff66;
-}
-
-.selected-card {
-  border-color: #66ff66 !important;
-  background-color: rgba(0, 20, 0, 0.8);
-  box-shadow: 0 0 12px #66ff66, 0 0 24px #00ff00;
+.card-image-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card-img-top {
-  height: 140px;
-  object-fit: cover;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   image-rendering: pixelated;
-  border-radius: 4px 4px 0 0;
+  transition: transform 0.3s ease-out;
 }
 
-.card-body {
-  padding: 0.5rem 0.25rem;
-  margin-top: auto;
+.character-card:hover .card-img-top {
+  transform: scale(1.05);
 }
 
-.card-title {
-  font-size: 0.65rem;
-  margin: 0;
+.card-info-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 20, 0, 0.92);
+  color: #0f0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  border-radius: inherit;
+  box-sizing: border-box;
+}
+
+.character-card:hover .card-info-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+.card-title-overlay {
+  font-family: 'Press Start 2P', cursive;
+  font-size: clamp(0.9em, 2.5vw, 1.1em);
+  margin-bottom: 0.75rem;
   word-break: break-word;
-  color: #ccff99;
+  color: #0f0;
+  text-shadow: 0 0 5px #0f0, 0 0 2px #6f6;
+  line-height: 1.4;
 }
 
-.text-white {
-  color: #00ff00 !important;
+.character-stats-list-overlay {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: clamp(0.8em, 2.2vw, 0.9em);
+  width: 90%;
+  max-width: 200px;
+}
+.character-stats-list-overlay li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  border-bottom: 1px dashed rgba(0, 255, 0, 0.4);
+  color: #0f0;
+}
+.character-stats-list-overlay li:last-child {
+  border-bottom: none;
+}
+.character-stats-list-overlay span:first-child {
+  color: #0c0;
+  margin-right: 8px;
+  display: inline-flex;
+  align-items: center;
+}
+.character-stats-list-overlay span:first-child svg,
+.character-stats-list-overlay span:first-child img {
+  margin-right: 4px;
+}
+.character-stats-list-overlay span:last-child {
+  font-weight: bold;
+  color: #6f6;
 }
 
-.text-white p {
-  font-size: 0.9rem;
-  margin-top: 1rem;
+.selected-card {
+  border-color: #9f9 !important;
+  box-shadow: 0 0 20px #9f9, 0 0 35px #3f3, inset 0 0 12px rgba(153,255,153,0.5) !important;
+}
+.selected-card .card-info-overlay {
+}
+
+@media (max-width: 992px) {
+  .character-card {
+    height: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-controls {
+    padding: 15px 0; /* Riduci padding verticale, orizzontale da content-container */
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  .title.page-main-title {
+    font-size: clamp(1.5em, 5vw, 2em); /* Coerenza con glossary */
+    margin-left: 0;
+    width: 100%;
+  }
+  .back-button {
+    min-width: auto;
+    width: 60%;
+    max-width: 200px;
+    align-self: center; /* Centra il bottone quando in colonna */
+  }
+  .selection-info {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    margin-bottom: 2rem;
+  }
+  .character-card {
+    height: 320px;
+  }
+  .card-title-overlay {
+    font-size: clamp(0.85em, 2.3vw, 1em);
+  }
+  .character-stats-list-overlay {
+    font-size: clamp(0.75em, 2vw, 0.85em);
+  }
+  .game-button { /* Stile generico per game-button su mobile */
+    padding: 8px 15px;
+    font-size: clamp(0.7em, 1.3vw, 0.9em);
+  }
+}
+
+@media (max-width: 576px) {
+  .select-bg {
+    padding-top: 1rem; /* Riduci padding-top globale per far spazio all'header */
+  }
+  .content-container {
+    padding: 0 10px 20px 10px; /* Riduci padding laterale per schermi piccoli */
+  }
+  .header-controls {
+    padding: 15px 0;
+    gap: 10px;
+  }
+  .title.page-main-title {
+    font-size: clamp(1.4em, 6vw, 1.8em); /* Coerenza con glossary */
+  }
+  .selection-info {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    margin-bottom: 1.5rem;
+  }
+  .character-card {
+    height: 280px;
+    border-width: 2px;
+  }
+  .card-title-overlay {
+    font-size: clamp(0.8em, 2.8vw, 0.95em);
+    margin-bottom: 0.5rem;
+  }
+  .character-stats-list-overlay {
+    font-size: clamp(0.7em, 2.5vw, 0.8em);
+  }
+  .character-stats-list-overlay li {
+    padding: 1px 0;
+  }
+  .back-button {
+    width: auto;
+    max-width: 180px; /* O 100% se vuoi che occupi tutta la larghezza disponibile */
+  }
 }
