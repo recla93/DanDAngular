@@ -30,7 +30,7 @@
   color: var(--glossary-text-light);
   padding: 20px 0;
   font-family: 'VT323', monospace;
-  background-color: var(--glossary-bg-dark);
+  /*background-color: var(--glossary-bg-dark);*/
 }
 
 .glossary-container {
@@ -42,7 +42,7 @@
 }
 
 .glossary-section {
-  margin-bottom: 20px;
+  margin-bottom: 20px;;
 }
 
 .glossary-accordion-header {
