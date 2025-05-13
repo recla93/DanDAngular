@@ -1,9 +1,17 @@
+<div class="header-controls">
+  <a routerLink="/" class="game-button back-button">
+    <span class="arrow">&lt;</span> HOME
+  </a>
+  <h1 class="page-main-title">GLOSSARIO</h1>
+</div>
+
+<div class="rain"></div>
+
 <div class="glossary-container">
 
   <section class="glossary-section">
     <div class="glossary-accordion-header" (click)="togglePersonaggi()" role="button" [attr.aria-expanded]="personaggiVisible" aria-controls="personaggi-grid">
-      <h1 class="glossary-title">Personaggi</h1>
-      <span class="glossary-accordion-icon">{{ personaggiVisible ? '▼' : '▶' }}</span>
+      <h2 class="glossary-title">Personaggi</h2> <span class="glossary-accordion-icon">{{ personaggiVisible ? '▼' : '▶' }}</span>
     </div>
 
     <div id="personaggi-grid" *ngIf="personaggiVisible">
@@ -21,7 +29,7 @@
                    (keydown.space)="handlePgCardFrontClick(pg); $event.preventDefault()">
                 <div class="glossary-card-header">
                   <span class="glossary-card-name">{{ pg.name }}</span>
-                  <span *ngIf="pg.enumType" class="glossary-badge">{{ pg.enumType }}</span>
+                  <span *ngIf="pg.enumType" class="glossary-badge type-badge">{{ pg.enumType }}</span>
                 </div>
                 <div class="glossary-card-body">
                   <div class="glossary-card-image-container">
@@ -98,8 +106,7 @@
 
   <section class="glossary-section">
     <div class="glossary-accordion-header" (click)="toggleMostri()" role="button" [attr.aria-expanded]="mostriVisible" aria-controls="mostri-grid">
-      <h1 class="glossary-title">Mostri</h1>
-      <span class="glossary-accordion-icon">{{ mostriVisible ? '▼' : '▶' }}</span>
+      <h2 class="glossary-title">Mostri</h2> <span class="glossary-accordion-icon">{{ mostriVisible ? '▼' : '▶' }}</span>
     </div>
 
     <div id="mostri-grid" *ngIf="mostriVisible">

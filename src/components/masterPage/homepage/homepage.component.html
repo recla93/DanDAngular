@@ -1,4 +1,26 @@
-<h1>Darkest Developer</h1>
+<div class="matrix-container">
+  <h1 class="matrix-text" data-text="Darkest Developers">Darkest Developers</h1>
+</div>
+<div class="rain"></div>
 
-<a routerLink="/selezione" class="game-button primary">NEW GAME</a>
-<button routerLink="/glossary" class="game-button secondary"> DIARIO </button>
+<div class="container button-container">
+  <a routerLink="/selezione" class="game-button primary">NEW GAME</a>
+  <button routerLink="/glossary" class="game-button secondary">GLOSSARIO</button>
+  <button (click)="openCreditsModal()" class="game-button credits">CREDITS</button>
+</div>
+
+<div class="credits-modal" *ngIf="showCreditsModal" [ngClass]="{'show': showCreditsModal}">
+  <div class="modal-content">
+    <button class="modal-close" (click)="closeCreditsModal()">X</button>
+    <h2>Credits</h2>
+    <ul>
+      <li>Mario Rossi - Game Designer</li>
+      <li>Luigi Verdi - Lead Developer</li>
+      <li>Peach Bianchi - Artist</li>
+      <li>Toad Gialli - Sound Designer</li>
+      <li>Pingu - Architecture Designer</li>
+      <li>Sviluppato con Odio e Dolore, Feat Stefano ogni tanto</li>
+      <li>Grazie a tutti i giocatori che hanno giocato a Darkest Developers</li>
+    </ul>
+  </div>
+</div>
