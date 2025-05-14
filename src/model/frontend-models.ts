@@ -51,3 +51,14 @@ export interface ActionRequest {
   target: number[];
   actionType: ActionType;
 }
+
+// export interface ActionDetailDto{
+//   name: string;
+//   description: string;
+//   actionTypes: ActionType;
+//   currentCoolDown: number;
+//   maxCoolDown: number;
+//   maxTarget: number;
+//   targetAllies: boolean;
+//   targetSelf: boolean;
+// }

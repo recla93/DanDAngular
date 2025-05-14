@@ -29,6 +29,7 @@ export class ArenaComponent implements OnInit, OnDestroy {
   public selectedActionRequiresTarget: boolean = true;
   public currentActingPg: PgDto | null = null;
   public currentActionTargetsAllies: boolean = false;
+  public maxSelectedTargets: number = 1; // NUOVA PROPRIETÀ
 
   private routeSubscription: Subscription | undefined;
   private static readonly PG_IDS_KEY = 'selectedPgIds';
@@ -212,6 +213,7 @@ export class ArenaComponent implements OnInit, OnDestroy {
     this.currentActingPg = actingPg;
     this.selectedTargets = [];
     this.currentActionTargetsAllies = false;
+    this.maxSelectedTargets = 1; // Default a 1
 
     const actionIndex = actingPg.actionsName.indexOf(actionName);
 
@@ -226,21 +228,24 @@ export class ArenaComponent implements OnInit, OnDestroy {
         this.selectedActionTypeForTargeting = ActionType.BASE;
       }
     } else {
-      this.addLogEntry(`ActionType non trovato per '${actionName}' (indice: ${actionIndex}) o backend non ha fornito 'actionTypes'. Uso BASE di default.`);
-      if (actingPg.actionTypes) {
-        console.warn("actingPg.actionTypes ricevuto:", JSON.stringify(actingPg.actionTypes));
-      } else {
-        console.warn("actingPg.actionTypes è undefined. Assicurati che il backend lo invii e che il nome del campo in frontend-models.ts PgDto corrisponda (es. 'actionTypes').");
-      }
+      this.addLogEntry(`ActionType non trovato per '${actionName}' (o backend non ha fornito 'actionTypes'). Uso BASE di default.`);
       this.selectedActionTypeForTargeting = ActionType.BASE;
     }
 
     if (this.selectedActionTypeForTargeting === ActionType.SPECIALE && actingPg.enumType === 'GITBARD') {
       this.currentActionTargetsAllies = true;
+      this.maxSelectedTargets = 1; // Gitbard cura un alleato alla volta
       this.selectedActionRequiresTarget = true;
-      this.addLogEntry(`L'azione ${actionName} può bersagliare alleati.`);
-    } else {
+      this.addLogEntry(`L'azione ${actionName} può bersagliare 1 alleato.`);
+    } else if (this.selectedActionTypeForTargeting === ActionType.SPECIALE) {
+      this.currentActionTargetsAllies = false; // Azione speciale offensiva
+      this.maxSelectedTargets = 3; // Esempio: fino a 3 nemici
+      // this.maxSelectedTargets = this.gameState?.evil.filter(m => m.currentHp > 0).length || 1; // Per tutti i nemici vivi
+      this.selectedActionRequiresTarget = true;
+      this.addLogEntry(`L'azione ${actionName} può bersagliare fino a ${this.maxSelectedTargets} nemici.`);
+    } else { // BASE o HEAVY
       this.currentActionTargetsAllies = false;
+      this.maxSelectedTargets = 1;
       this.selectedActionRequiresTarget = !this.isActionSelfTargetedOnly(this.selectedActionTypeForTargeting, actingPg);
     }
 
@@ -262,40 +267,47 @@ export class ArenaComponent implements OnInit, OnDestroy {
     if (this.isPaused || !this.isTargetingPlayerAction || this.battleOutcome || !this.currentActingPg) return;
 
     const targetEntityType = this.getEntityType(target.id);
+    const targetIndex = this.selectedTargets.findIndex(t => t.id === target.id);
 
     if (this.currentActionTargetsAllies) {
       if (targetEntityType === 'pg') {
-        const index = this.selectedTargets.findIndex(t => t.id === target.id);
-        if (index > -1) {
-          this.selectedTargets.splice(index, 1);
+        if (targetIndex > -1) { // Deseleziona se già selezionato
+          this.selectedTargets.splice(targetIndex, 1);
           this.addLogEntry(`${target.name} deselezionato.`);
-        } else {
-          this.selectedTargets = [target as PgDto];
-          this.addLogEntry(`${this.currentActingPg.name} bersaglia ${target.name} per ${this.selectedActionNameForTargeting}.`);
+        } else { // Seleziona (per cure, maxSelectedTargets è 1)
+          if (this.selectedTargets.length < this.maxSelectedTargets) {
+            this.selectedTargets = [target as PgDto]; // Sostituisce se maxTargets è 1
+            this.addLogEntry(`${this.currentActingPg.name} bersaglia ${target.name} per ${this.selectedActionNameForTargeting}.`);
+          } else {
+            this.addLogEntry(`Puoi selezionare al massimo ${this.maxSelectedTargets} alleato/i per questa azione.`);
+          }
         }
       } else {
         this.addLogEntry("Questa azione può bersagliare solo personaggi alleati.");
-        return;
       }
-    } else {
+    } else { // Azione offensiva (bersaglia mostri)
       if (targetEntityType === 'monster') {
-        const index = this.selectedTargets.findIndex(t => t.id === target.id);
-        if (index > -1) {
-          this.selectedTargets.splice(index, 1);
+        if (targetIndex > -1) { // Deseleziona se già selezionato
+          this.selectedTargets.splice(targetIndex, 1);
           this.addLogEntry(`${target.name} deselezionato.`);
-        } else {
-          this.selectedTargets = [target as MonsterDto];
-          this.addLogEntry(`${this.currentActingPg.name} bersaglia ${target.name} per ${this.selectedActionNameForTargeting}.`);
+        } else { // Seleziona nuovo bersaglio
+          if (this.maxSelectedTargets === 1) {
+            this.selectedTargets = [target as MonsterDto]; // Sostituisce se è single-target
+            this.addLogEntry(`${this.currentActingPg.name} bersaglia ${target.name} per ${this.selectedActionNameForTargeting}.`);
+          } else if (this.selectedTargets.length < this.maxSelectedTargets) {
+            this.selectedTargets.push(target as MonsterDto); // Aggiunge se multi-target e c'è spazio
+            this.addLogEntry(`${this.currentActingPg.name} aggiunge ${target.name} ai bersagli per ${this.selectedActionNameForTargeting}.`);
+          } else {
+            this.addLogEntry(`Puoi selezionare al massimo ${this.maxSelectedTargets} nemico/i per questa azione.`);
+          }
         }
       } else {
         this.addLogEntry("Questa azione può bersagliare solo mostri nemici.");
-        return;
       }
     }
     this.cdRef.detectChanges();
   }
 
-  // NUOVO METODO PUBBLICO
   public isTargetSelected(entityId: number): boolean {
     if (!this.selectedTargets) {
       return false;
@@ -360,6 +372,7 @@ export class ArenaComponent implements OnInit, OnDestroy {
     this.currentActingPg = null;
     this.selectedActionRequiresTarget = true;
     this.currentActionTargetsAllies = false;
+    this.maxSelectedTargets = 1; // Resetta a 1
   }
 
   public getSelectedTargetNames(): string {
