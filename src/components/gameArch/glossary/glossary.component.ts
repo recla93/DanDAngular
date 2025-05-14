@@ -7,12 +7,14 @@ import { takeUntil, catchError } from 'rxjs/operators';
 import { Pg } from '../../../model/Pg'; // Assicurati che il percorso sia corretto
 import { Monster } from '../../../model/Monster'; // Assicurati che il percorso sia corretto
 import { PgRepositoryService } from '../../../services/pg-repository.service'; // Assicurati che il percorso sia corretto
-import { MonsterRepositoryService } from '../../../services/monster-repository.service'; // Assicurati che il percorso sia corretto
+import { MonsterRepositoryService } from '../../../services/monster-repository.service';
+import {ActionDetailDto} from '../../../model/frontend-models'; // Assicurati che il percorso sia corretto
 
 interface PgWithState extends Pg {
   id: number; // Assumendo che Pg abbia un id, o aggiungilo se necessario
   flipped: boolean;
   descriptionToShow: string | null;
+  detailedActions?: ActionDetailDto[];
 }
 
 interface MonsterWithState extends Monster {
@@ -114,10 +116,8 @@ export class GlossaryComponent implements OnInit, OnDestroy {
     }
   }
 
-  showPgActionDetails(pg: PgWithState, actionName: string, index: number): void {
-    const description = (pg.actionsDescriptions && pg.actionsDescriptions[index])
-      ? pg.actionsDescriptions[index]
-      : `Dettagli per azione '${actionName}' non disponibili.`;
+  showPgActionDetails(pg: PgWithState, actionDetail: ActionDetailDto, index: number): void {
+    const description = actionDetail.description;
     pg.descriptionToShow = description;
     if (!pg.flipped) {
       pg.flipped = true;

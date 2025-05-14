@@ -70,6 +70,19 @@ export class ArenaComponent implements OnInit, OnDestroy {
     }
   }
 
+  // *** INIZIO NUOVA AGGIUNTA ***
+  public get currentTurnCharacterAsPg(): PgDto | null {
+    if (this.gameState && this.gameState.currentEntity) {
+      const char = this.getCharacterById(this.gameState.currentEntity);
+      // Controlla che sia un PgDto (verificando la presenza di detailedActions o un campo specifico dei PG)
+      if (char && 'detailedActions' in char && this.getEntityType(char.id) === 'pg') {
+        return char as PgDto;
+      }
+    }
+    return null;
+  }
+  // *** FINE NUOVA AGGIUNTA ***
+
   private initializeBattle(): void {
     this.isLoading = true;
     this.isPaused = false;
@@ -105,11 +118,6 @@ export class ArenaComponent implements OnInit, OnDestroy {
         pg.detailedActions = [];
       } else {
         pg.detailedActions.forEach(action => {
-          // LOG PRIMA DELLA COERCIZIONE BOOLEANA
-          console.log(`[PROCESS_GAME_STATE] Azione: ${action.name} (PG: ${pg.name})`);
-          console.log(`  > Valore RAW action.targetsAllies:`, action.targetAllies, `(Tipo: ${typeof action.targetAllies})`);
-          console.log(`  > Valore RAW action.targetsSelf:`, action.targetSelf, `(Tipo: ${typeof action.targetSelf})`);
-
           const enumValue = Object.values(ActionType).find(val => val === (action.actionType as string));
           if (enumValue) {
             action.actionType = enumValue;
@@ -117,13 +125,8 @@ export class ArenaComponent implements OnInit, OnDestroy {
             console.warn(`[PROCESS_GAME_STATE] ActionType non valido ('${action.actionType}') per l'azione '${action.name}' del PG ${pg.name}. Default a BASE.`);
             action.actionType = ActionType.BASE;
           }
-
           action.targetAllies = !!action.targetAllies;
           action.targetSelf = !!action.targetSelf;
-
-          // LOG DOPO LA COERCIZIONE BOOLEANA
-          console.log(`  > Valore COERCED action.targetsAllies:`, action.targetAllies);
-          console.log(`  > Valore COERCED action.targetsSelf:`, action.targetSelf);
         });
       }
     });
@@ -232,14 +235,8 @@ export class ArenaComponent implements OnInit, OnDestroy {
     }
 
     this.selectedActionForTargeting = selectedAction;
-    this.currentActingPg = actingPg;
+    this.currentActingPg = actingPg; // currentActingPg è ancora utile per quando si conferma l'azione
     this.selectedTargets = [];
-
-    console.log(`[DEBUG HNDL_ACTION_SELECT] Azione Selezionata: ${selectedAction.name}`);
-    console.log(`  > DTO Completo (da selectedActionForTargeting):`, JSON.parse(JSON.stringify(this.selectedActionForTargeting)));
-    console.log(`  > targetsAllies (da selectedActionForTargeting): ${this.selectedActionForTargeting.targetAllies} (Tipo: ${typeof this.selectedActionForTargeting.targetAllies})`);
-    console.log(`  > targetsSelf (da selectedActionForTargeting): ${this.selectedActionForTargeting.targetSelf} (Tipo: ${typeof this.selectedActionForTargeting.targetSelf})`);
-
 
     if (this.selectedActionForTargeting.targetSelf === true) {
       this.isTargetingPlayerAction = false;
@@ -258,14 +255,14 @@ export class ArenaComponent implements OnInit, OnDestroy {
   }
 
   public selectTarget(target: MonsterDto | PgDto): void {
-    if (this.isPaused || !this.isTargetingPlayerAction || this.battleOutcome || !this.currentActingPg || !this.selectedActionForTargeting) {
+    if (this.isPaused || !this.isTargetingPlayerAction || this.battleOutcome || !this.selectedActionForTargeting) { // currentActingPg non è più necessario qui per la logica di base
       return;
     }
 
     const targetEntityType = this.getEntityType(target.id);
     const action = this.selectedActionForTargeting;
+    const actingCharacterName = this.currentActingPg?.name || this.currentTurnCharacterAsPg?.name || "Giocatore";
 
-    console.log(`[DEBUG SELECT_TARGET] Tentativo di selezionare: ${target.name} (tipo: ${targetEntityType}). Azione: ${action.name}, action.targetsAllies: ${action.targetAllies} (Tipo: ${typeof action.targetAllies}), action.maxTargets: ${action.maxTargets}`);
 
     if (target.currentHp <= 0 && !action.name.toLowerCase().includes("resurrezione")) {
       this.addLogEntry(`${target.name} è sconfitto e non può essere bersagliato da questa azione.`);
@@ -282,18 +279,18 @@ export class ArenaComponent implements OnInit, OnDestroy {
         } else {
           if (action.maxTargets === 1) {
             this.selectedTargets = [target as PgDto];
-            this.addLogEntry(`${this.currentActingPg.name} bersaglia ${target.name} per ${action.name}.`);
+            this.addLogEntry(`${actingCharacterName} bersaglia ${target.name} per ${action.name}.`);
           } else if (this.selectedTargets.length < action.maxTargets) {
             this.selectedTargets.push(target as PgDto);
-            this.addLogEntry(`${this.currentActingPg.name} aggiunge ${target.name} ai bersagli per ${action.name}.`);
+            this.addLogEntry(`${actingCharacterName} aggiunge ${target.name} ai bersagli per ${action.name}.`);
           } else {
             this.addLogEntry(`Puoi selezionare al massimo ${action.maxTargets} alleato/i. Deseleziona un bersaglio per cambiarlo.`);
           }
         }
       } else {
-        this.addLogEntry(`L'azione '${action.name}' può bersagliare solo personaggi alleati, non ${targetEntityType}. (action.targetsAllies è ${action.targetAllies})`);
+        this.addLogEntry(`L'azione '${action.name}' può bersagliare solo personaggi alleati, non ${targetEntityType}.`);
       }
-    } else {
+    } else { // targetsEnemies (o targetAllies è false)
       if (targetEntityType === 'monster') {
         if (targetIndex > -1) {
           this.selectedTargets.splice(targetIndex, 1);
@@ -301,32 +298,38 @@ export class ArenaComponent implements OnInit, OnDestroy {
         } else {
           if (action.maxTargets === 1) {
             this.selectedTargets = [target as MonsterDto];
-            this.addLogEntry(`${this.currentActingPg.name} bersaglia ${target.name} per ${action.name}.`);
+            this.addLogEntry(`${actingCharacterName} bersaglia ${target.name} per ${action.name}.`);
           } else if (this.selectedTargets.length < action.maxTargets) {
             this.selectedTargets.push(target as MonsterDto);
-            this.addLogEntry(`${this.currentActingPg.name} aggiunge ${target.name} ai bersagli per ${action.name}.`);
+            this.addLogEntry(`${actingCharacterName} aggiunge ${target.name} ai bersagli per ${action.name}.`);
           } else {
             this.addLogEntry(`Puoi selezionare al massimo ${action.maxTargets} nemico/i. Deseleziona un bersaglio per cambiarlo.`);
           }
         }
       } else {
-        this.addLogEntry(`L'azione '${action.name}' può bersagliare solo mostri nemici, non ${targetEntityType}. (action.targetsAllies è ${action.targetAllies})`);
+        this.addLogEntry(`L'azione '${action.name}' può bersagliare solo mostri nemici, non ${targetEntityType}.`);
       }
     }
     this.cdRef.detectChanges();
   }
 
+
   public isCharacterCardTargetable(character: PgDto | MonsterDto): boolean {
-    if (!this.isTargetingPlayerAction || !this.selectedActionForTargeting || this.isPaused || character.currentHp <= 0) {
+    if (!this.isTargetingPlayerAction || !this.selectedActionForTargeting || this.isPaused ) {
       return false;
     }
+    // Non permettere di bersagliare personaggi sconfitti a meno che l'azione non sia una resurrezione
+    if (character.currentHp <= 0 && !this.selectedActionForTargeting.name.toLowerCase().includes("resurrezione")) {
+      return false;
+    }
+
     const action = this.selectedActionForTargeting;
     const characterType = this.getEntityType(character.id);
 
     let canBeTargeted = false;
-    if (action.targetAllies === true) {
+    if (action.targetAllies === true) { // L'azione bersaglia alleati
       canBeTargeted = characterType === 'pg';
-    } else {
+    } else { // L'azione bersaglia nemici
       canBeTargeted = characterType === 'monster';
     }
     return canBeTargeted;
@@ -338,7 +341,8 @@ export class ArenaComponent implements OnInit, OnDestroy {
   }
 
   public confirmPlayerAction(): void {
-    if (this.isPaused || !this.gameState || !this.isPlayerTurn() || this.battleOutcome || !this.selectedActionForTargeting || !this.currentActingPg) {
+    const actingPgForAction = this.currentActingPg || this.currentTurnCharacterAsPg;
+    if (this.isPaused || !this.gameState || !this.isPlayerTurn() || this.battleOutcome || !this.selectedActionForTargeting || !actingPgForAction) {
       this.cancelTargeting();
       return;
     }
@@ -350,27 +354,27 @@ export class ArenaComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.addLogEntry(`${this.currentActingPg.name} usa l'azione ${action.name} (${action.actionType}) su ${this.selectedTargets.length > 0 ? this.selectedTargets.map(target => target.name).join(', ') : (action.targetSelf ? 'sé stesso' : 'tutti i bersagli validi')}`);
+    this.addLogEntry(`${actingPgForAction.name} usa l'azione ${action.name} (${action.actionType}) su ${this.selectedTargets.length > 0 ? this.selectedTargets.map(target => target.name).join(', ') : (action.targetSelf ? 'sé stesso' : 'tutti i bersagli validi')}`);
 
     const actionRequest: ActionRequest = {
       previousDto: this.gameState,
       target: this.selectedTargets.map(target => target.id),
       actionType: action.actionType,
-      actionName: action.name
+      actionName: action.name // Assicurati che actionName sia inviato se il backend lo richiede
     };
 
     const oldPgsHp = this.gameState.good.map(pg => ({ id: pg.id, hp: pg.currentHp }));
     const oldMonstersHp = this.gameState.evil.map(m => ({ id: m.id, hp: m.currentHp }));
 
     this.isLoading = true;
-    this.resetActionState();
+    this.resetActionState(); // Resetta prima di inviare la richiesta
     this.cdRef.detectChanges();
 
     this.combatService.performAction(actionRequest).subscribe({
       next: (updatedGameStateFromServer) => {
         this.gameState = this.processIncomingGameState(updatedGameStateFromServer, this.gameState);
         this.logHpChanges(oldPgsHp, this.gameState.good);
-        this.logHpChanges(oldMonstersHp, this.gameState.evil.filter(m => oldMonstersHp.find(om => om.id === m.id)));
+        this.logHpChanges(oldMonstersHp, this.gameState.evil.filter(m => oldMonstersHp.find(om => om.id === m.id))); // Filtra per loggare solo mostri esistenti
         this.isLoading = false;
         this.cdRef.detectChanges();
         this.proceedToNextStep();
@@ -378,10 +382,12 @@ export class ArenaComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.addLogEntry(`Errore durante l'esecuzione dell'azione: ${err.message}`);
         this.isLoading = false;
+        // Non resettare lo stato qui, potrebbe essere utile per debug o ritentativi
         this.cdRef.detectChanges();
       }
     });
   }
+
 
   public cancelTargeting(): void {
     this.resetActionState();
@@ -393,8 +399,10 @@ export class ArenaComponent implements OnInit, OnDestroy {
     this.isTargetingPlayerAction = false;
     this.selectedActionForTargeting = null;
     this.selectedTargets = [];
-    this.currentActingPg = null;
+    // Non resettare currentActingPg qui se lo usi per display nel targeting-info panel
+    // this.currentActingPg = null; // Resettato solo se necessario o dopo l'azione
   }
+
 
   public getSelectedTargetNames(): string {
     return this.selectedTargets.map(target => target.name).join(', ');
@@ -406,6 +414,7 @@ export class ArenaComponent implements OnInit, OnDestroy {
       this.cdRef.detectChanges();
       return;
     }
+    // È importante che this.gameState sia quello aggiornato prima di chiamare checkBattleOver
     this.combatService.checkBattleOver(this.gameState).subscribe({
       next: (outcome) => {
         if (outcome !== "La battaglia è ancora in corso") {
@@ -430,12 +439,15 @@ export class ArenaComponent implements OnInit, OnDestroy {
     if (this.isPaused || !this.gameState || this.battleOutcome) return;
     this.isLoading = true;
     this.cdRef.detectChanges();
+    // Assicurati che this.gameState sia quello corretto e aggiornato
     this.combatService.advanceToNextEntity(this.gameState).subscribe({
       next: (nextStateFromServer) => {
         this.gameState = this.processIncomingGameState(nextStateFromServer, this.gameState);
         const nextChar = this.getCharacterById(this.gameState.currentEntity);
         this.addLogEntry(`Prossimo turno: ${nextChar?.name || 'Sconosciuto'}`);
         this.isLoading = false;
+        // Qui resetActionState() potrebbe essere appropriato se non fatto altrove
+        // this.resetActionState(); // Potrebbe essere necessario per pulire lo stato del turno precedente
         this.cdRef.detectChanges();
         this.checkIfMonsterTurn();
       },
@@ -446,6 +458,7 @@ export class ArenaComponent implements OnInit, OnDestroy {
       }
     });
   }
+
 
   public getEntityType(entityId: number): 'pg' | 'monster' | 'unknown' {
     if (!this.gameState) return 'unknown';
@@ -467,22 +480,23 @@ export class ArenaComponent implements OnInit, OnDestroy {
     this.isPaused = !this.isPaused;
     if (this.isPaused) {
       this.addLogEntry("Partita in pausa.");
-      this.cancelTargeting();
+      this.cancelTargeting(); // Annulla anche il targeting
     } else {
       this.addLogEntry("Partita ripresa.");
-      this.checkIfMonsterTurn();
+      this.checkIfMonsterTurn(); // Controlla se è il turno di un mostro alla ripresa
     }
     this.cdRef.detectChanges();
   }
 
+
   public startNewGameFromPause(): void {
-    this.isPaused = false;
+    this.isPaused = false; // Assicurati che la pausa sia disattivata
     sessionStorage.removeItem(ArenaComponent.PG_IDS_KEY);
     this.navigateToSelection();
   }
 
   public navigateToHomeFromPause(): void {
-    this.isPaused = false;
+    this.isPaused = false; // Assicurati che la pausa sia disattivata
     sessionStorage.removeItem(ArenaComponent.PG_IDS_KEY);
     this.navigateToHome();
   }
@@ -491,5 +505,12 @@ export class ArenaComponent implements OnInit, OnDestroy {
     if (this.routeSubscription) {
       this.routeSubscription.unsubscribe();
     }
+    // Considera di pulire sessionStorage qui se non vuoi che persista tra sessioni del browser
+    // sessionStorage.removeItem(ArenaComponent.PG_IDS_KEY);
+  }
+
+  public getLogReversed()
+  {
+    return [...this.battleLog].reverse();
   }
 }

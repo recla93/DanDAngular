@@ -50,13 +50,13 @@
                     <li><span>🛡️ DEF</span><span>{{ pg.def }}</span></li>
                     <li><span>💨 SPD</span><span>{{ pg.spd }}</span></li>
                   </ul>
-                  <div class="glossary-details-section" *ngIf="pg.actionsName && pg.actionsName.length > 0">
+                  <div class="glossary-details-section" *ngIf="pg.detailedActions && pg.detailedActions.length > 0">
                     <strong>Azioni:</strong>
                     <div class="glossary-tags-container">
-                      <button *ngFor="let actionName of pg.actionsName; let i = index"
+                      <button *ngFor="let actionName of pg.detailedActions; let i = index"
                               class="glossary-tag glossary-action-tag"
                               (click)="showPgActionDetails(pg, actionName, i); $event.stopPropagation()">
-                        {{ actionName }}
+                        {{ actionName.name }}
                       </button>
                     </div>
                   </div>
