@@ -66,7 +66,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* Sopra il menu di pausa */
+  z-index: 1000;
   text-align: center;
 }
 
@@ -103,21 +103,21 @@
 }
 
 .pause-menu-button-container {
-  position: fixed; /* o absolute, a seconda del contenitore padre */
+  position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 500; /* Sopra l'area di battaglia ma sotto gli overlay di fine/caricamento */
+  z-index: 500;
 }
 
 .pause-button {
   font-family: 'Press Start 2P', cursive;
-  font-size: 1.5em; /* Icona menu più grande */
+  font-size: 1.5em;
   background-color: rgba(0,0,0,0.7);
   color: #0f0;
   border: 2px solid #0f0;
   padding: 8px 12px;
   cursor: pointer;
-  border-radius: 50%; /* Pulsante tondo */
+  border-radius: 50%;
   width: 50px;
   height: 50px;
   display: flex;
@@ -143,7 +143,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 900; /* Sopra tutto tranne outcome/loading overlay */
+  z-index: 900;
   padding: 20px;
   box-sizing: border-box;
 }
@@ -172,7 +172,7 @@
 
 .pause-menu-content .game-style-button {
   display: block;
-  width: calc(100% - 20px); /* Pulsanti a larghezza piena nel menu */
+  width: calc(100% - 20px);
   margin: 15px auto;
 }
 .pause-menu-content .resume-button {
@@ -184,7 +184,6 @@
   background-color: #000;
   color: #3f3;
 }
-
 
 .battle-area {
   display: flex;
@@ -200,9 +199,8 @@
 .battle-log-container.paused {
   filter: blur(3px);
   opacity: 0.7;
-  pointer-events: none; /* Impedisce interazioni quando in pausa */
+  pointer-events: none;
 }
-
 
 .team {
   width: 45%;
@@ -247,16 +245,25 @@
 .character-card.targetable {
   cursor: crosshair;
   border-color: #f00;
+  outline: 2px dashed #f00; /* Aggiunge un outline per maggiore visibilità */
 }
 
 .character-card.targetable:hover {
   box-shadow: 0 0 15px #f00;
 }
 
+.character-card.selected-as-target {
+  border-color: #00ffff !important; /* Ciano per bersaglio selezionato */
+  box-shadow: 0 0 20px #00ffff, 0 0 10px #00ffff inset !important;
+  transform: scale(1.05); /* Leggermente più grande quando selezionato */
+}
+
+
 .character-card.defeated {
   opacity: 0.5;
   background-color: rgba(50,0,0,0.7);
   border-color: #500;
+  filter: grayscale(80%);
 }
 
 .character-card.defeated .character-image {
@@ -317,13 +324,32 @@
   color: #0c0;
 }
 
-.actions-panel .action-button { /* Specifica per i pulsanti azione */
+.actions-panel .action-button {
   font-family: 'VT323', monospace;
-  font-size: 0.9em;
-  padding: 5px 10px;
+  font-size: 0.9em; /* Leggermente più piccolo se game-style-button è più grande */
+  padding: 5px 8px; /* Padding specifico per i pulsanti azione */
   margin: 3px;
   border-radius: 3px;
+  line-height: 1.2; /* Per allineare meglio testo e eventuale cooldown */
 }
+
+.actions-panel .action-button span { /* Stile per il testo del cooldown */
+  font-size: 0.8em;
+  color: #f80; /* Arancione per il cooldown */
+  margin-left: 4px;
+}
+
+.actions-panel .action-button:disabled {
+  background-color: #444;
+  border-color: #555;
+  color: #888;
+  cursor: not-allowed;
+  text-shadow: none;
+}
+.actions-panel .action-button:disabled span {
+  color: #777;
+}
+
 
 .turn-indicator-monster {
   font-size: 0.7em;
@@ -362,7 +388,7 @@
   color: #ff0;
 }
 
-.targeting-info .game-style-button { /* Usa la classe generica */
+.targeting-info .game-style-button {
   font-size: 0.8em;
   padding: 8px 15px;
 }
@@ -435,7 +461,7 @@
 .error-message-container p {
   margin-bottom: 10px;
 }
-.error-message-container .game-style-button { /* Usa la classe generica */
+.error-message-container .game-style-button {
   font-size: 0.9em;
   padding: 8px 15px;
   background-color: #f00;

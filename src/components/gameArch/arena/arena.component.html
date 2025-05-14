@@ -30,7 +30,7 @@
              class="character-card"
              [class.active-character]="pg.id === gameState.currentEntity && !isPaused"
              [class.defeated]="pg.currentHp <= 0"
-             [class.targetable]="isTargetingPlayerAction && currentActionTargetsAllies && getEntityType(pg.id) === 'pg' && !isPaused && pg.currentHp > 0"
+             [class.targetable]="isTargetingPlayerAction && selectedActionForTargeting?.targetsAllies && getEntityType(pg.id) === 'pg' && !isPaused && pg.currentHp > 0"
              [class.selected-as-target]="isTargetSelected(pg.id)"
              (click)="selectTarget(pg)">
           <img [src]="pg.imageUrl || 'https://placehold.co/100x150/000500/0f0?text=' + pg.name" [alt]="pg.name" class="character-image">
@@ -43,8 +43,12 @@
           </div>
           <div *ngIf="pg.id === gameState.currentEntity && isPlayerTurn() && !isTargetingPlayerAction && !isPaused" class="actions-panel">
             <h4>Azioni di {{ pg.name }}</h4>
-            <button *ngFor="let actionName of pg.actionsName; let i = index" (click)="handlePlayerActionSelection(actionName, pg)" class="game-style-button action-button">
-              {{ actionName }}
+            <button *ngFor="let actionDetail of pg.detailedActions"
+                    (click)="handlePlayerActionSelection(actionDetail, pg)"
+                    class="game-style-button action-button"
+                    [disabled]="actionDetail.currentCooldown > 0"
+                    [title]="actionDetail.description + (actionDetail.currentCooldown > 0 ? ' (Cooldown: ' + actionDetail.currentCooldown + ')' : '')">
+              {{ actionDetail.name }} <span *ngIf="actionDetail.currentCooldown > 0">({{ actionDetail.currentCooldown }})</span>
             </button>
           </div>
         </div>
@@ -55,7 +59,7 @@
         <div *ngFor="let monster of gameState.evil"
              class="character-card"
              [class.active-character]="monster.id === gameState.currentEntity && !isPaused"
-             [class.targetable]="isTargetingPlayerAction && !currentActionTargetsAllies && getEntityType(monster.id) === 'monster' && !isPaused && monster.currentHp > 0"
+             [class.targetable]="isTargetingPlayerAction && selectedActionForTargeting && !selectedActionForTargeting.targetsAllies && getEntityType(monster.id) === 'monster' && !isPaused && monster.currentHp > 0"
              [class.selected-as-target]="isTargetSelected(monster.id)"
              (click)="selectTarget(monster)"
              [class.defeated]="monster.currentHp <= 0">
@@ -79,12 +83,14 @@
       <p *ngIf="isPaused">Partita in Pausa</p>
     </div>
 
-    <div *ngIf="isTargetingPlayerAction && !isPaused" class="targeting-info">
-      <p>Seleziona bersaglio/i per l'azione: <strong>{{ selectedActionNameForTargeting }}</strong> da <strong>{{ currentActingPg?.name }}</strong></p>
+    <div *ngIf="isTargetingPlayerAction && !isPaused && selectedActionForTargeting" class="targeting-info">
+      <p>Seleziona bersaglio/i per l'azione: <strong>{{ selectedActionForTargeting.name }}</strong> da <strong>{{ currentActingPg?.name }}</strong>
+        (Max: {{ selectedActionForTargeting.maxTargets }})
+      </p>
       <div *ngIf="selectedTargets.length > 0">
-        Bersagli selezionati: {{ getSelectedTargetNames() }}
+        Bersagli selezionati: {{ getSelectedTargetNames() }} ({{selectedTargets.length}}/{{selectedActionForTargeting.maxTargets}})
       </div>
-      <button (click)="confirmPlayerAction()" [disabled]="selectedActionRequiresTarget && selectedTargets.length === 0" class="game-style-button confirm-action-button">Conferma Azione</button>
+      <button (click)="confirmPlayerAction()" [disabled]="!selectedActionForTargeting.targetsSelf && selectedActionForTargeting.maxTargets > 0 && selectedTargets.length === 0" class="game-style-button confirm-action-button">Conferma Azione</button>
       <button (click)="cancelTargeting()" class="game-style-button cancel-action-button">Annulla</button>
     </div>
 

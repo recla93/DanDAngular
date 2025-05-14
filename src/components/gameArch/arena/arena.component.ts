@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef 
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { CombatClientService } from '../../../services/combat-client.service';
-import { GameStateDto, PgDto, MonsterDto, ActionRequest, ActionType } from '../../../model/frontend-models';
+import { CombatClientService } from '../../../services/combat-client.service'; // Assicurati che il percorso sia corretto
+import { GameStateDto, PgDto, MonsterDto, ActionRequest, ActionType, ActionDetailDto } from '../../../model/frontend-models'; // Assicurati che il percorso sia corretto
 
 @Component({
   selector: 'app-arena',
@@ -23,13 +23,9 @@ export class ArenaComponent implements OnInit, OnDestroy {
   public isPaused: boolean = false;
 
   public isTargetingPlayerAction: boolean = false;
-  public selectedActionNameForTargeting: string | null = null;
-  public selectedActionTypeForTargeting: ActionType | null = null;
+  public selectedActionForTargeting: ActionDetailDto | null = null; // Contiene tutti i dettagli dell'azione selezionata
   public selectedTargets: (PgDto | MonsterDto)[] = [];
-  public selectedActionRequiresTarget: boolean = true;
   public currentActingPg: PgDto | null = null;
-  public currentActionTargetsAllies: boolean = false;
-  public maxSelectedTargets: number = 1; // NUOVA PROPRIETÀ
 
   private routeSubscription: Subscription | undefined;
   private static readonly PG_IDS_KEY = 'selectedPgIds';
@@ -103,6 +99,22 @@ export class ArenaComponent implements OnInit, OnDestroy {
       const existingPg = existingState?.good.find(epg => epg.id === pg.id);
       pg.maxHp = existingPg?.maxHp || pg.hp;
       pg.currentHp = pg.hp;
+
+      if (!pg.detailedActions) {
+        console.warn(`PgDto per ${pg.name} (ID: ${pg.id}) non ha il campo 'detailedActions'. Assicurati che il backend lo invii.`);
+        pg.detailedActions = [];
+      } else {
+        pg.detailedActions.forEach(action => {
+          // Converte la stringa actionType (dal JSON) nell'enum ActionType
+          const enumValue = Object.values(ActionType).find(val => val === (action.actionType as string));
+          if (enumValue) {
+            action.actionType = enumValue;
+          } else {
+            console.warn(`ActionType non valido ('${action.actionType}') per l'azione '${action.name}' del PG ${pg.name}. Default a BASE.`);
+            action.actionType = ActionType.BASE; // Fallback
+          }
+        });
+      }
     });
     newState.evil.forEach(monster => {
       const existingMonster = existingState?.evil.find(em => em.id === monster.id);
@@ -111,7 +123,6 @@ export class ArenaComponent implements OnInit, OnDestroy {
     });
     return newState;
   }
-
 
   private addLogEntry(message: string): void {
     this.battleLog.push(message);
@@ -144,7 +155,6 @@ export class ArenaComponent implements OnInit, OnDestroy {
 
   private checkIfMonsterTurn(): void {
     if (this.isPaused || this.battleOutcome || !this.gameState) return;
-
     if (!this.isPlayerTurn()) {
       const monster = this.getCharacterById(this.gameState.currentEntity);
       this.addLogEntry(`È il turno di ${monster?.name || 'Mostro Sconosciuto'}. Il mostro prepara un'azione...`);
@@ -155,23 +165,19 @@ export class ArenaComponent implements OnInit, OnDestroy {
 
   private handleMonsterAction(): void {
     if (this.isPaused || this.battleOutcome || !this.gameState || this.isPlayerTurn()) return;
-
     const monsterActionRequest: ActionRequest = {
       previousDto: this.gameState,
       target: [],
       actionType: ActionType.BASE
     };
-
     this.isLoading = true;
     this.cdRef.detectChanges();
     this.combatService.performAction(monsterActionRequest).subscribe({
       next: (updatedGameStateFromServer) => {
         const actingCharacter = this.getCharacterById(this.gameState!.currentEntity);
         const oldPgsHp = this.gameState!.good.map(pg => ({ id: pg.id, hp: pg.currentHp }));
-
         this.gameState = this.processIncomingGameState(updatedGameStateFromServer, this.gameState);
-
-        this.logHpChanges(oldPgsHp, this.gameState.good);
+        this.logHpChanges(oldPgsHp, this.gameState.good, null); // Passa null per oldMonstersHp
         this.addLogEntry(`${actingCharacter?.name || 'Mostro'} ha agito.`);
         this.isLoading = false;
         this.cdRef.detectChanges();
@@ -187,7 +193,8 @@ export class ArenaComponent implements OnInit, OnDestroy {
 
   private logHpChanges(
     oldEntitiesHp: { id: number; hp: number }[],
-    newEntities: (PgDto | MonsterDto)[]
+    newEntities: (PgDto | MonsterDto)[],
+    oldEnemyHpMap?: Map<number, number> | null // Aggiunto per coerenza, anche se non usato qui
   ): void {
     newEntities.forEach(newEntity => {
       const oldEntity = oldEntitiesHp.find(o => o.id === newEntity.id);
@@ -206,102 +213,99 @@ export class ArenaComponent implements OnInit, OnDestroy {
     });
   }
 
-  public handlePlayerActionSelection(actionName: string, actingPg: PgDto): void {
-    if (this.isPaused || this.battleOutcome || !this.gameState || !this.isPlayerTurn()) return;
-
-    this.selectedActionNameForTargeting = actionName;
-    this.currentActingPg = actingPg;
-    this.selectedTargets = [];
-    this.currentActionTargetsAllies = false;
-    this.maxSelectedTargets = 1; // Default a 1
-
-    const actionIndex = actingPg.actionsName.indexOf(actionName);
-
-    if (actionIndex !== -1 && actingPg.actionTypes && actingPg.actionTypes[actionIndex] !== undefined) {
-      const backendActionTypeString = actingPg.actionTypes[actionIndex];
-      const enumValue = Object.values(ActionType).find(val => val === backendActionTypeString);
-
-      if (enumValue) {
-        this.selectedActionTypeForTargeting = enumValue;
-      } else {
-        this.addLogEntry(`Valore ActionType ('${backendActionTypeString}') dal backend per '${actionName}' non è un ActionType enum valido. Uso BASE di default.`);
-        this.selectedActionTypeForTargeting = ActionType.BASE;
+  public handlePlayerActionSelection(selectedAction: ActionDetailDto, actingPg: PgDto): void {
+    // Chiamato quando un giocatore clicca un pulsante azione.
+    // selectedAction è l'oggetto ActionDetailDto completo.
+    if (this.isPaused || this.battleOutcome || !this.gameState || !this.isPlayerTurn() || selectedAction.currentCooldown > 0) {
+      if (selectedAction.currentCooldown > 0) {
+        this.addLogEntry(`Azione '${selectedAction.name}' è in cooldown per altri ${selectedAction.currentCooldown} turni.`);
       }
-    } else {
-      this.addLogEntry(`ActionType non trovato per '${actionName}' (o backend non ha fornito 'actionTypes'). Uso BASE di default.`);
-      this.selectedActionTypeForTargeting = ActionType.BASE;
+      return;
     }
 
-    if (this.selectedActionTypeForTargeting === ActionType.SPECIALE && actingPg.enumType === 'GITBARD') {
-      this.currentActionTargetsAllies = true;
-      this.maxSelectedTargets = 1; // Gitbard cura un alleato alla volta
-      this.selectedActionRequiresTarget = true;
-      this.addLogEntry(`L'azione ${actionName} può bersagliare 1 alleato.`);
-    } else if (this.selectedActionTypeForTargeting === ActionType.SPECIALE) {
-      this.currentActionTargetsAllies = false; // Azione speciale offensiva
-      this.maxSelectedTargets = 3; // Esempio: fino a 3 nemici
-      // this.maxSelectedTargets = this.gameState?.evil.filter(m => m.currentHp > 0).length || 1; // Per tutti i nemici vivi
-      this.selectedActionRequiresTarget = true;
-      this.addLogEntry(`L'azione ${actionName} può bersagliare fino a ${this.maxSelectedTargets} nemici.`);
-    } else { // BASE o HEAVY
-      this.currentActionTargetsAllies = false;
-      this.maxSelectedTargets = 1;
-      this.selectedActionRequiresTarget = !this.isActionSelfTargetedOnly(this.selectedActionTypeForTargeting, actingPg);
-    }
+    this.selectedActionForTargeting = selectedAction; // Memorizza l'azione selezionata
+    this.currentActingPg = actingPg;
+    this.selectedTargets = []; // Resetta i bersagli precedenti
 
-    if (this.isActionSelfTargetedOnly(this.selectedActionTypeForTargeting, actingPg) && !this.currentActionTargetsAllies) {
+    console.log('[DEBUG] Azione Selezionata:', this.selectedActionForTargeting);
+    console.log(`[DEBUG] targetsSelf: ${selectedAction.targetsSelf}, targetsAllies: ${selectedAction.targetsAllies}, maxTargets: ${selectedAction.maxTargets}`);
+
+    if (selectedAction.targetsSelf) {
+      // Se l'azione bersaglia solo sé stesso, non c'è bisogno di entrare in modalità targeting.
       this.isTargetingPlayerAction = false;
-      this.selectedTargets = [actingPg];
-      this.confirmPlayerAction();
+      this.selectedTargets = [actingPg]; // Il bersaglio è l'attore stesso
+      this.addLogEntry(`${actingPg.name} usa ${selectedAction.name} su sé stesso.`);
+      this.confirmPlayerAction(); // Esegui l'azione immediatamente
     } else {
+      // Altrimenti, entra in modalità targeting.
       this.isTargetingPlayerAction = true;
+      if (selectedAction.maxTargets > 0) {
+        this.addLogEntry(`Seleziona ${selectedAction.maxTargets > 1 ? 'fino a ' : ''}${selectedAction.maxTargets} ${selectedAction.targetsAllies ? 'alleato/i' : 'nemico/i'} per ${selectedAction.name}.`);
+      } else {
+        // Questo caso (maxTargets <= 0 e non targetsSelf) potrebbe indicare un'azione ad area che colpisce tutti
+        // i nemici o tutti gli alleati senza selezione esplicita.
+        // Per ora, entriamo comunque in modalità targeting, ma potrebbe essere gestito diversamente.
+        this.addLogEntry(`Azione ${selectedAction.name} selezionata. Potrebbe bersagliare tutti o richiedere una conferma senza selezione esplicita.`);
+        // Se è un'azione ad area che non richiede selezione, potresti voler popolare selectedTargets qui
+        // e chiamare confirmPlayerAction(), oppure il backend la gestisce basandosi solo su actionName/Type.
+      }
     }
     this.cdRef.detectChanges();
   }
 
-  private isActionSelfTargetedOnly(actionType: ActionType | null, player: PgDto): boolean {
-    return false;
-  }
-
   public selectTarget(target: MonsterDto | PgDto): void {
-    if (this.isPaused || !this.isTargetingPlayerAction || this.battleOutcome || !this.currentActingPg) return;
+    // Chiamato quando si clicca su una card personaggio/mostro durante il targeting.
+    if (this.isPaused || !this.isTargetingPlayerAction || this.battleOutcome || !this.currentActingPg || !this.selectedActionForTargeting) {
+      return;
+    }
 
     const targetEntityType = this.getEntityType(target.id);
+    const action = this.selectedActionForTargeting;
+
+    // Non permettere di bersagliare entità sconfitte (a meno che non sia una resurrezione, da implementare)
+    if (target.currentHp <= 0 && !action.name.toLowerCase().includes("resurrezione")) {
+      this.addLogEntry(`${target.name} è sconfitto e non può essere bersagliato da questa azione.`);
+      return;
+    }
+
     const targetIndex = this.selectedTargets.findIndex(t => t.id === target.id);
 
-    if (this.currentActionTargetsAllies) {
-      if (targetEntityType === 'pg') {
-        if (targetIndex > -1) { // Deseleziona se già selezionato
+    if (action.targetsAllies) {
+      if (targetEntityType === 'pg') { // L'azione bersaglia alleati, e il target cliccato è un PG
+        if (targetIndex > -1) { // Se il PG è già selezionato, deselezionalo
           this.selectedTargets.splice(targetIndex, 1);
           this.addLogEntry(`${target.name} deselezionato.`);
-        } else { // Seleziona (per cure, maxSelectedTargets è 1)
-          if (this.selectedTargets.length < this.maxSelectedTargets) {
-            this.selectedTargets = [target as PgDto]; // Sostituisce se maxTargets è 1
-            this.addLogEntry(`${this.currentActingPg.name} bersaglia ${target.name} per ${this.selectedActionNameForTargeting}.`);
-          } else {
-            this.addLogEntry(`Puoi selezionare al massimo ${this.maxSelectedTargets} alleato/i per questa azione.`);
+        } else { // Se il PG non è selezionato
+          if (action.maxTargets === 1) { // Se l'azione è a bersaglio singolo alleato
+            this.selectedTargets = [target as PgDto]; // Sostituisci la selezione corrente
+            this.addLogEntry(`${this.currentActingPg.name} bersaglia ${target.name} per ${action.name}.`);
+          } else if (this.selectedTargets.length < action.maxTargets) { // Se è multi-target alleato e c'è spazio
+            this.selectedTargets.push(target as PgDto);
+            this.addLogEntry(`${this.currentActingPg.name} aggiunge ${target.name} ai bersagli per ${action.name}.`);
+          } else { // Limite massimo di bersagli alleati raggiunto
+            this.addLogEntry(`Puoi selezionare al massimo ${action.maxTargets} alleato/i. Deseleziona un bersaglio per cambiarlo.`);
           }
         }
-      } else {
+      } else { // Tentativo di bersagliare un non-PG con un'azione per alleati
         this.addLogEntry("Questa azione può bersagliare solo personaggi alleati.");
       }
-    } else { // Azione offensiva (bersaglia mostri)
-      if (targetEntityType === 'monster') {
-        if (targetIndex > -1) { // Deseleziona se già selezionato
+    } else { // L'azione NON bersaglia alleati (quindi è offensiva, bersaglia mostri)
+      if (targetEntityType === 'monster') { // E il target cliccato è un mostro
+        if (targetIndex > -1) { // Se il mostro è già selezionato, deselezionalo
           this.selectedTargets.splice(targetIndex, 1);
           this.addLogEntry(`${target.name} deselezionato.`);
-        } else { // Seleziona nuovo bersaglio
-          if (this.maxSelectedTargets === 1) {
-            this.selectedTargets = [target as MonsterDto]; // Sostituisce se è single-target
-            this.addLogEntry(`${this.currentActingPg.name} bersaglia ${target.name} per ${this.selectedActionNameForTargeting}.`);
-          } else if (this.selectedTargets.length < this.maxSelectedTargets) {
-            this.selectedTargets.push(target as MonsterDto); // Aggiunge se multi-target e c'è spazio
-            this.addLogEntry(`${this.currentActingPg.name} aggiunge ${target.name} ai bersagli per ${this.selectedActionNameForTargeting}.`);
-          } else {
-            this.addLogEntry(`Puoi selezionare al massimo ${this.maxSelectedTargets} nemico/i per questa azione.`);
+        } else { // Se il mostro non è selezionato
+          if (action.maxTargets === 1) { // Se l'azione è a bersaglio singolo nemico
+            this.selectedTargets = [target as MonsterDto]; // Sostituisci la selezione corrente
+            this.addLogEntry(`${this.currentActingPg.name} bersaglia ${target.name} per ${action.name}.`);
+          } else if (this.selectedTargets.length < action.maxTargets) { // Se è multi-target nemico e c'è spazio
+            this.selectedTargets.push(target as MonsterDto);
+            this.addLogEntry(`${this.currentActingPg.name} aggiunge ${target.name} ai bersagli per ${action.name}.`);
+          } else { // Limite massimo di bersagli nemici raggiunto
+            this.addLogEntry(`Puoi selezionare al massimo ${action.maxTargets} nemico/i. Deseleziona un bersaglio per cambiarlo.`);
           }
         }
-      } else {
+      } else { // Tentativo di bersagliare un non-mostro con un'azione offensiva
         this.addLogEntry("Questa azione può bersagliare solo mostri nemici.");
       }
     }
@@ -309,30 +313,31 @@ export class ArenaComponent implements OnInit, OnDestroy {
   }
 
   public isTargetSelected(entityId: number): boolean {
-    if (!this.selectedTargets) {
-      return false;
-    }
+    if (!this.selectedTargets) return false;
     return this.selectedTargets.some(target => target.id === entityId);
   }
 
   public confirmPlayerAction(): void {
-    if (this.isPaused || !this.gameState || !this.isPlayerTurn() || this.battleOutcome || !this.selectedActionTypeForTargeting || !this.currentActingPg) {
+    if (this.isPaused || !this.gameState || !this.isPlayerTurn() || this.battleOutcome || !this.selectedActionForTargeting || !this.currentActingPg) {
       this.cancelTargeting();
       return;
     }
 
-    if (this.selectedActionRequiresTarget && this.selectedTargets.length === 0) {
+    const action = this.selectedActionForTargeting;
+    // Se l'azione non è su sé stesso E richiede bersagli (maxTargets > 0) E nessun bersaglio è selezionato -> errore
+    if (!action.targetsSelf && action.maxTargets > 0 && this.selectedTargets.length === 0) {
       this.addLogEntry("Devi selezionare almeno un bersaglio per questa azione.");
       this.cdRef.detectChanges();
       return;
     }
 
-    this.addLogEntry(`${this.currentActingPg.name} usa l'azione ${this.selectedActionNameForTargeting} (${this.selectedActionTypeForTargeting}) su ${this.selectedTargets.map(target => target.name).join(', ')}`);
+    this.addLogEntry(`${this.currentActingPg.name} usa l'azione ${action.name} (${action.actionType}) su ${this.selectedTargets.length > 0 ? this.selectedTargets.map(target => target.name).join(', ') : (action.targetsSelf ? 'sé stesso' : 'tutti i bersagli validi')}`);
 
     const actionRequest: ActionRequest = {
       previousDto: this.gameState,
-      target: this.selectedTargets.map(target => target.id),
-      actionType: this.selectedActionTypeForTargeting
+      target: this.selectedTargets.map(target => target.id), // Invia gli ID dei bersagli selezionati
+      actionType: action.actionType,
+      actionName: action.name
     };
 
     const oldPgsHp = this.gameState.good.map(pg => ({ id: pg.id, hp: pg.currentHp }));
@@ -345,8 +350,8 @@ export class ArenaComponent implements OnInit, OnDestroy {
     this.combatService.performAction(actionRequest).subscribe({
       next: (updatedGameStateFromServer) => {
         this.gameState = this.processIncomingGameState(updatedGameStateFromServer, this.gameState);
-        this.logHpChanges(oldPgsHp, this.gameState.good);
-        this.logHpChanges(oldMonstersHp, this.gameState.evil);
+        this.logHpChanges(oldPgsHp, this.gameState.good, null); // Passa null per oldMonstersHp se non rilevante per questa chiamata
+        this.logHpChanges(oldMonstersHp, this.gameState.evil, null); // Logica per i mostri se colpiti
         this.isLoading = false;
         this.cdRef.detectChanges();
         this.proceedToNextStep();
@@ -361,18 +366,15 @@ export class ArenaComponent implements OnInit, OnDestroy {
 
   public cancelTargeting(): void {
     this.resetActionState();
+    this.addLogEntry("Selezione bersaglio annullata.");
     this.cdRef.detectChanges();
   }
 
   private resetActionState(): void {
     this.isTargetingPlayerAction = false;
-    this.selectedActionNameForTargeting = null;
-    this.selectedActionTypeForTargeting = null;
+    this.selectedActionForTargeting = null;
     this.selectedTargets = [];
     this.currentActingPg = null;
-    this.selectedActionRequiresTarget = true;
-    this.currentActionTargetsAllies = false;
-    this.maxSelectedTargets = 1; // Resetta a 1
   }
 
   public getSelectedTargetNames(): string {
