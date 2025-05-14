@@ -26,7 +26,13 @@
     <div class="battle-area" [class.paused]="isPaused">
       <div class="team player-team">
         <h3>La Tua Squadra</h3>
-        <div *ngFor="let pg of gameState.good" class="character-card" [class.active-character]="pg.id === gameState.currentEntity && !isPaused" [class.defeated]="pg.currentHp <= 0">
+        <div *ngFor="let pg of gameState.good"
+             class="character-card"
+             [class.active-character]="pg.id === gameState.currentEntity && !isPaused"
+             [class.defeated]="pg.currentHp <= 0"
+             [class.targetable]="isTargetingPlayerAction && currentActionTargetsAllies && getEntityType(pg.id) === 'pg' && !isPaused && pg.currentHp > 0"
+             [class.selected-as-target]="isTargetSelected(pg.id)"
+             (click)="selectTarget(pg)">
           <img [src]="pg.imageUrl || 'https://placehold.co/100x150/000500/0f0?text=' + pg.name" [alt]="pg.name" class="character-image">
           <div class="character-name">{{ pg.name }}</div>
           <div class="character-hp">
@@ -37,7 +43,7 @@
           </div>
           <div *ngIf="pg.id === gameState.currentEntity && isPlayerTurn() && !isTargetingPlayerAction && !isPaused" class="actions-panel">
             <h4>Azioni di {{ pg.name }}</h4>
-            <button *ngFor="let actionName of pg.actionsName" (click)="handlePlayerActionSelection(actionName, pg)" class="game-style-button action-button">
+            <button *ngFor="let actionName of pg.actionsName; let i = index" (click)="handlePlayerActionSelection(actionName, pg)" class="game-style-button action-button">
               {{ actionName }}
             </button>
           </div>
@@ -46,9 +52,11 @@
 
       <div class="team monster-team">
         <h3>Mostri</h3>
-        <div *ngFor="let monster of gameState.evil" class="character-card"
+        <div *ngFor="let monster of gameState.evil"
+             class="character-card"
              [class.active-character]="monster.id === gameState.currentEntity && !isPaused"
-             [class.targetable]="isTargetingPlayerAction && selectedActionRequiresTarget && getEntityType(monster.id) === 'monster' && !isPaused"
+             [class.targetable]="isTargetingPlayerAction && !currentActionTargetsAllies && getEntityType(monster.id) === 'monster' && !isPaused && monster.currentHp > 0"
+             [class.selected-as-target]="isTargetSelected(monster.id)"
              (click)="selectTarget(monster)"
              [class.defeated]="monster.currentHp <= 0">
           <img [src]="monster.imageUrl || 'https://placehold.co/100x150/000500/0f0?text=' + monster.name" [alt]="monster.name" class="character-image">
@@ -72,7 +80,7 @@
     </div>
 
     <div *ngIf="isTargetingPlayerAction && !isPaused" class="targeting-info">
-      <p>Seleziona bersaglio/i per l'azione: <strong>{{ selectedActionNameForTargeting }}</strong> su <strong>{{ currentActingPg?.name }}</strong></p>
+      <p>Seleziona bersaglio/i per l'azione: <strong>{{ selectedActionNameForTargeting }}</strong> da <strong>{{ currentActingPg?.name }}</strong></p>
       <div *ngIf="selectedTargets.length > 0">
         Bersagli selezionati: {{ getSelectedTargetNames() }}
       </div>
