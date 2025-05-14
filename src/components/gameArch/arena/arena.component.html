@@ -30,7 +30,7 @@
              class="character-card"
              [class.active-character]="pg.id === gameState.currentEntity && !isPaused"
              [class.defeated]="pg.currentHp <= 0"
-             [class.targetable]="isTargetingPlayerAction && selectedActionForTargeting?.targetsAllies && getEntityType(pg.id) === 'pg' && !isPaused && pg.currentHp > 0"
+             [class.targetable]="isCharacterCardTargetable(pg)"
              [class.selected-as-target]="isTargetSelected(pg.id)"
              (click)="selectTarget(pg)">
           <img [src]="pg.imageUrl || 'https://placehold.co/100x150/000500/0f0?text=' + pg.name" [alt]="pg.name" class="character-image">
@@ -59,7 +59,7 @@
         <div *ngFor="let monster of gameState.evil"
              class="character-card"
              [class.active-character]="monster.id === gameState.currentEntity && !isPaused"
-             [class.targetable]="isTargetingPlayerAction && selectedActionForTargeting && !selectedActionForTargeting.targetsAllies && getEntityType(monster.id) === 'monster' && !isPaused && monster.currentHp > 0"
+             [class.targetable]="isCharacterCardTargetable(monster)"
              [class.selected-as-target]="isTargetSelected(monster.id)"
              (click)="selectTarget(monster)"
              [class.defeated]="monster.currentHp <= 0">
@@ -90,10 +90,9 @@
       <div *ngIf="selectedTargets.length > 0">
         Bersagli selezionati: {{ getSelectedTargetNames() }} ({{selectedTargets.length}}/{{selectedActionForTargeting.maxTargets}})
       </div>
-      <button (click)="confirmPlayerAction()" [disabled]="!selectedActionForTargeting.targetsSelf && selectedActionForTargeting.maxTargets > 0 && selectedTargets.length === 0" class="game-style-button confirm-action-button">Conferma Azione</button>
+      <button (click)="confirmPlayerAction()" [disabled]="!selectedActionForTargeting.targetSelf && selectedActionForTargeting.maxTargets > 0 && selectedTargets.length === 0" class="game-style-button confirm-action-button">Conferma Azione</button>
       <button (click)="cancelTargeting()" class="game-style-button cancel-action-button">Annulla</button>
     </div>
-
 
     <div class="battle-log-container" [class.paused]="isPaused">
       <h4>Log della Battaglia</h4>

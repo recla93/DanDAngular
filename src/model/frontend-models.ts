@@ -13,8 +13,8 @@ export interface ActionDetailDto {
   currentCooldown: number; // Cooldown attuale dell'azione (0 se utilizzabile)
   maxCooldown: number;     // Cooldown massimo/base dell'azione
   maxTargets: number;      // Numero massimo di bersagli (es. 1, 3, o un valore speciale per "tutti")
-  targetsAllies: boolean;  // True se l'azione può bersagliare alleati (es. cure)
-  targetsSelf: boolean;    // True se l'azione bersaglia solo sé stesso e non richiede selezione
+  targetAllies: boolean;  // True se l'azione può bersagliare alleati (es. cure)
+  targetSelf: boolean;    // True se l'azione bersaglia solo sé stesso e non richiede selezione
   // Aggiungi qui altre proprietà specifiche dell'azione se necessario
 }
 
