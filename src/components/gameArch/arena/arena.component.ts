@@ -206,18 +206,27 @@ export class ArenaComponent implements OnInit, OnDestroy {
 
   public handlePlayerActionSelection(actionName: string, actingPg: PgDto): void {
     if (this.isPaused || this.battleOutcome || !this.gameState || !this.isPlayerTurn()) return;
-
+    console.log(actionName)
+    console.log(actingPg)
     this.selectedActionNameForTargeting = actionName;
     this.currentActingPg = actingPg;
 
     const actionIndex = actingPg.actionsName.indexOf(actionName);
 
-    if (actionIndex !== -1 && actingPg.actionType && actingPg.actionType[actionIndex] !== undefined) {
+    console.log(actingPg.actionTypes)
+    if (actionIndex !== -1 && actingPg.actionTypes && actingPg.actionTypes[actionIndex] !== undefined) {
       // Prendi il valore stringa dal backend
-      const backendActionTypeString = actingPg.actionType[actionIndex] as string;
+      const backendActionTypeString = actingPg.actionTypes[actionIndex] as string;
 
       // Valida se questa stringa è un membro valido del nostro enum ActionType
-      if (Object.values(ActionType).includes(backendActionTypeString as ActionType)) {
+      let azionePresente= false
+      for(let a in ActionType)
+        if(a==actingPg.actionTypes[actionIndex])
+          azionePresente=true;
+
+
+      console.log(backendActionTypeString)
+      if (azionePresente) {
         this.selectedActionTypeForTargeting = backendActionTypeString as ActionType;
       } else {
         this.addLogEntry(`Valore ActionType ('${backendActionTypeString}') dal backend per '${actionName}' non è un ActionType enum valido. Uso BASE di default.`);
@@ -225,8 +234,8 @@ export class ArenaComponent implements OnInit, OnDestroy {
       }
     } else {
       this.addLogEntry(`ActionType non trovato per '${actionName}' (indice: ${actionIndex}) o backend non ha fornito actionTypes. Uso BASE di default.`);
-      if (actingPg.actionType) {
-        console.warn('actingPg.actionTypes ricevuto:', JSON.stringify(actingPg.actionType));
+      if (actingPg.actionTypes) {
+        console.warn('actingPg.actionTypes ricevuto:', JSON.stringify(actingPg.actionTypes));
       } else {
         console.warn('actingPg.actionTypes è undefined.');
       }

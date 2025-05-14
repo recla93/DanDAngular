@@ -8,7 +8,7 @@ export interface PgDto {
   spd: number;
   actionsName: string[];
   actionsDescriptions: string[];
-  actionType: string[];
+  actionTypes: string[];
   equipmentsName: string[];
   equipmentsDescriptions: string[];
   enumType: string;
