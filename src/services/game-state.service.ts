@@ -17,7 +17,7 @@ export class GameStateService {
   iniziaGame()
   {
       //da far scegliere al giocatore
-      let listaId= [1,2,3]; //dal bottone inzia game dobbiamo passare al selector pg e far scegliere agli utenti 3 pg
+      let listaId= [1,2,3]; //dal bottone inizia game dobbiamo passare al selector pg e far scegliere agli utenti 3 pg
                                       // i cui id dovranno riempire la lista
                                       // suggerimento: per ora mettete un pulsante per far eseguire la mossa al mostro, non sarà eseguita in automatico,
  //                                      questo pulsante farà fare una mossa casuale al mostro

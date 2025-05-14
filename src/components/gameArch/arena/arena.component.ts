@@ -99,8 +99,8 @@ export class ArenaComponent implements OnInit, OnDestroy {
   private processIncomingGameState(newState: GameStateDto, existingState?: GameStateDto | null): GameStateDto {
     newState.good.forEach(pg => {
       const existingPg = existingState?.good.find(epg => epg.id === pg.id);
-      pg.maxHp = existingPg?.maxHp || pg.hp; // Usa maxHp esistente o hp iniziale come maxHp
-      pg.currentHp = pg.hp; // hp dal backend è sempre currentHp
+      pg.maxHp = existingPg?.maxHp || pg.hp;
+      pg.currentHp = pg.hp;
     });
     newState.evil.forEach(monster => {
       const existingMonster = existingState?.evil.find(em => em.id === monster.id);
@@ -169,7 +169,7 @@ export class ArenaComponent implements OnInit, OnDestroy {
 
         this.gameState = this.processIncomingGameState(updatedGameStateFromServer, this.gameState);
 
-        this.logHpChanges(oldPgsHp, this.gameState.good, 'pg');
+        this.logHpChanges(oldPgsHp, this.gameState.good);
         this.addLogEntry(`${actingCharacter?.name || 'Mostro'} ha agito.`);
         this.isLoading = false;
         this.cdRef.detectChanges();
@@ -185,8 +185,7 @@ export class ArenaComponent implements OnInit, OnDestroy {
 
   private logHpChanges(
     oldEntitiesHp: { id: number; hp: number }[],
-    newEntities: (PgDto | MonsterDto)[],
-    entityType: 'pg' | 'monster'
+    newEntities: (PgDto | MonsterDto)[]
   ): void {
     newEntities.forEach(newEntity => {
       const oldEntity = oldEntitiesHp.find(o => o.id === newEntity.id);
@@ -211,18 +210,30 @@ export class ArenaComponent implements OnInit, OnDestroy {
     this.selectedActionNameForTargeting = actionName;
     this.currentActingPg = actingPg;
 
-    const actionTypeString = actionName.toUpperCase().replace(/\s+/g, '_');
-    const actionTypeValues = Object.values(ActionType) as string[];
+    const actionIndex = actingPg.actionsName.indexOf(actionName);
 
-    if (actionTypeValues.includes(actionTypeString)) {
-      this.selectedActionTypeForTargeting = ActionType[actionTypeString as keyof typeof ActionType];
+    if (actionIndex !== -1 && actingPg.actionType && actingPg.actionType[actionIndex] !== undefined) {
+      // Prendi il valore stringa dal backend
+      const backendActionTypeString = actingPg.actionType[actionIndex] as string;
+
+      // Valida se questa stringa è un membro valido del nostro enum ActionType
+      if (Object.values(ActionType).includes(backendActionTypeString as ActionType)) {
+        this.selectedActionTypeForTargeting = backendActionTypeString as ActionType;
+      } else {
+        this.addLogEntry(`Valore ActionType ('${backendActionTypeString}') dal backend per '${actionName}' non è un ActionType enum valido. Uso BASE di default.`);
+        this.selectedActionTypeForTargeting = ActionType.BASE;
+      }
     } else {
-      this.addLogEntry(`Azione '${actionName}' non riconosciuta come ActionType valido. Uso BASE di default.`);
+      this.addLogEntry(`ActionType non trovato per '${actionName}' (indice: ${actionIndex}) o backend non ha fornito actionTypes. Uso BASE di default.`);
+      if (actingPg.actionType) {
+        console.warn('actingPg.actionTypes ricevuto:', JSON.stringify(actingPg.actionType));
+      } else {
+        console.warn('actingPg.actionTypes è undefined.');
+      }
       this.selectedActionTypeForTargeting = ActionType.BASE;
     }
 
     this.selectedActionRequiresTarget = !(this.selectedActionTypeForTargeting === ActionType.SPECIALE && actingPg.enumType === 'GITBARD' && !this.actionTargetsAllies(this.selectedActionTypeForTargeting));
-
 
     if (this.actionTargetsSelf(this.selectedActionTypeForTargeting, actingPg)) {
       this.isTargetingPlayerAction = false;
@@ -236,16 +247,11 @@ export class ArenaComponent implements OnInit, OnDestroy {
   }
 
   private actionTargetsSelf(actionType: ActionType | null, player: PgDto): boolean {
-    // Esempio: se SPECIALE del GITBARD può essere auto-diretta senza target espliciti
-    // if (actionType === ActionType.SPECIALE && player.enumType === 'GITBARD') return true;
-    return false; // Modifica questa logica in base alle tue azioni
+    return false;
   }
   private actionTargetsAllies(actionType: ActionType | null): boolean {
-    // Esempio: se SPECIALE del GITBARD è sempre su alleati (o sé stesso)
-    // if (actionType === ActionType.SPECIALE && this.currentActingPg?.enumType === 'GITBARD') return true;
-    return false; // Modifica in base alle tue azioni
+    return false;
   }
-
 
   public selectTarget(target: MonsterDto | PgDto): void {
     if (this.isPaused || !this.isTargetingPlayerAction || this.battleOutcome) return;
@@ -254,20 +260,19 @@ export class ArenaComponent implements OnInit, OnDestroy {
     if (index > -1) {
       this.selectedTargets.splice(index, 1);
     } else {
-      // Logica di selezione bersaglio specifica per azione/tipo PG
       if (this.selectedActionTypeForTargeting === ActionType.SPECIALE && this.currentActingPg?.enumType === 'GITBARD') {
-        if (this.getEntityType(target.id) === 'pg') { // Gitbard cura solo PG
-          this.selectedTargets = [target]; // Assumendo cura singola per semplicità
+        if (this.getEntityType(target.id) === 'pg') {
+          this.selectedTargets = [target];
         } else {
           this.addLogEntry("Il Gitbard può curare solo i PG con l'azione speciale.");
           return;
         }
-      } else if (this.getEntityType(target.id) === 'monster') { // Azioni offensive normali su mostri
-        this.selectedTargets = [target]; // Assumendo bersaglio singolo per semplicità
-      } else if (this.getEntityType(target.id) === 'pg' && this.currentActingPg?.id !== target.id) {
+      } else if (this.getEntityType(target.id) === 'monster') {
+        this.selectedTargets = [target];
+      } else if (this.getEntityType(target.id) === 'pg' && this.currentActingPg?.id !== target.id && this.selectedActionTypeForTargeting !== ActionType.SPECIALE) {
         this.addLogEntry("Non puoi bersagliare un alleato con questa azione offensiva.");
         return;
-      } else if (this.getEntityType(target.id) === 'pg' && this.currentActingPg?.id === target.id) {
+      } else if (this.getEntityType(target.id) === 'pg' && this.currentActingPg?.id === target.id && this.selectedActionTypeForTargeting !== ActionType.SPECIALE) {
         this.addLogEntry("Non puoi auto-bersagliarti con un attacco standard.");
         return;
       }
@@ -287,7 +292,7 @@ export class ArenaComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.addLogEntry(`${this.currentActingPg.name} usa l'azione ${this.selectedActionNameForTargeting} su ${this.selectedTargets.map(t => t.name).join(', ')}`);
+    this.addLogEntry(`${this.currentActingPg.name} usa l'azione ${this.selectedActionNameForTargeting} (${this.selectedActionTypeForTargeting}) su ${this.selectedTargets.map(t => t.name).join(', ')}`);
 
     const actionRequest: ActionRequest = {
       previousDto: this.gameState,
@@ -298,7 +303,6 @@ export class ArenaComponent implements OnInit, OnDestroy {
     const oldPgsHp = this.gameState.good.map(pg => ({ id: pg.id, hp: pg.currentHp }));
     const oldMonstersHp = this.gameState.evil.map(m => ({ id: m.id, hp: m.currentHp }));
 
-
     this.isLoading = true;
     this.resetActionState();
     this.cdRef.detectChanges();
@@ -306,8 +310,8 @@ export class ArenaComponent implements OnInit, OnDestroy {
     this.combatService.performAction(actionRequest).subscribe({
       next: (updatedGameStateFromServer) => {
         this.gameState = this.processIncomingGameState(updatedGameStateFromServer, this.gameState);
-        this.logHpChanges(oldPgsHp, this.gameState.good, 'pg');
-        this.logHpChanges(oldMonstersHp, this.gameState.evil, 'monster');
+        this.logHpChanges(oldPgsHp, this.gameState.good);
+        this.logHpChanges(oldMonstersHp, this.gameState.evil);
         this.isLoading = false;
         this.cdRef.detectChanges();
         this.proceedToNextStep();
